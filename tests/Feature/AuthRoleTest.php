@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthRoleTest extends TestCase
@@ -80,6 +82,27 @@ class AuthRoleTest extends TestCase
 
         $response->assertRedirect(route('customer.dashboard'));
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_user_with_legacy_plaintext_password_can_login_and_get_rehashed(): void
+    {
+        DB::table('users')->insert([
+            'name' => 'Admin Toko',
+            'email' => 'admin@pecahbelah.com',
+            'password' => '123456',
+            'role' => 'admin',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'admin@pecahbelah.com',
+            'password' => '123456',
+        ]);
+
+        $response->assertRedirect(route('admin.dashboard'));
+        $this->assertAuthenticated();
+        $this->assertTrue(Hash::check('123456', auth()->user()->password));
     }
 
     public function test_dashboard_layout_files_exist_for_role_based_sidebar(): void

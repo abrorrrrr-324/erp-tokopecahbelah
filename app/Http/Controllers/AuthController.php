@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -24,6 +25,19 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
+
+        $user = User::query()->where('email', $credentials['email'])->first();
+
+        if ($user && $this->isLegacyPlaintextPassword($user, $credentials['password'])) {
+            $user->update([
+                'password' => Hash::make($credentials['password']),
+            ]);
+
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            return $this->redirectToRoleDashboard($user);
+        }
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
@@ -44,6 +58,21 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    protected function isLegacyPlaintextPassword(User $user, string $password): bool
+    {
+        $storedPassword = (string) $user->getAuthPassword();
+
+        if ($storedPassword === '') {
+            return false;
+        }
+
+        if (preg_match('/^\$2[aby]\$/', $storedPassword) === 1) {
+            return Hash::check($password, $storedPassword);
+        }
+
+        return hash_equals($storedPassword, $password);
     }
 
     protected function redirectToRoleDashboard(User $user): RedirectResponse
