@@ -6,11 +6,10 @@
 
 @section('content')
     @php
-        $products = [
-            ['name' => 'Kursi Kayu Minimalis', 'category' => 'Furniture', 'stock' => 32, 'price' => 'Rp 1.250.000', 'status' => 'Aktif'],
-            ['name' => 'Lemari 3 Pintu', 'category' => 'Furniture', 'stock' => 14, 'price' => 'Rp 2.400.000', 'status' => 'Aktif'],
-            ['name' => 'Lampu LED 12W', 'category' => 'Elektronik', 'stock' => 67, 'price' => 'Rp 220.000', 'status' => 'Promo'],
-            ['name' => 'Sprei Queen Set', 'category' => 'Textil', 'stock' => 9, 'price' => 'Rp 480.000', 'status' => 'Hampir habis'],
+        $statusClasses = [
+            'Promo' => 'bg-emerald-100 text-emerald-700',
+            'Hampir habis' => 'bg-amber-100 text-amber-700',
+            'Aktif' => 'bg-stone-100 text-stone-700',
         ];
     @endphp
 
@@ -28,19 +27,19 @@
         <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             <div class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
                 <p class="text-sm text-stone-500">Total Produk</p>
-                <p class="mt-3 text-3xl font-black text-stone-900">328</p>
+                <p class="mt-3 text-3xl font-black text-stone-900">{{ $totalProduk }}</p>
             </div>
             <div class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
                 <p class="text-sm text-stone-500">Stok Rendah</p>
-                <p class="mt-3 text-3xl font-black text-stone-900">18</p>
+                <p class="mt-3 text-3xl font-black text-stone-900">{{ $stokRendah }}</p>
             </div>
             <div class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
                 <p class="text-sm text-stone-500">Kategori</p>
-                <p class="mt-3 text-3xl font-black text-stone-900">16</p>
+                <p class="mt-3 text-3xl font-black text-stone-900">{{ $kategori }}</p>
             </div>
             <div class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-stone-500">Penjualan Bulan Ini</p>
-                <p class="mt-3 text-3xl font-black text-stone-900">Rp 42,8 Jt</p>
+                <p class="text-sm text-stone-500">Nilai Produk</p>
+                <p class="mt-3 text-3xl font-black text-stone-900">Rp {{ number_format($penjualanBulanIni, 0, ',', '.') }}</p>
             </div>
         </section>
 
@@ -66,26 +65,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($products as $product)
+                        @forelse ($products as $product)
                             <tr class="border-b border-stone-100 last:border-0">
-                                <td class="py-3 pr-4 font-semibold text-stone-900">{{ $product['name'] }}</td>
-                                <td class="py-3 pr-4">{{ $product['category'] }}</td>
-                                <td class="py-3 pr-4">{{ $product['stock'] }}</td>
-                                <td class="py-3 pr-4">{{ $product['price'] }}</td>
+                                <td class="py-3 pr-4 font-semibold text-stone-900">{{ $product->name }}</td>
+                                <td class="py-3 pr-4">{{ $product->category }}</td>
+                                <td class="py-3 pr-4">{{ $product->stock }}</td>
+                                <td class="py-3 pr-4">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
                                 <td class="py-3 pr-4">
-                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold
-                                        @if ($product['status'] === 'Promo') bg-emerald-100 text-emerald-700
-                                        @elseif ($product['status'] === 'Hampir habis') bg-amber-100 text-amber-700
-                                        @else bg-stone-100 text-stone-700
-                                        @endif">
-                                        {{ $product['status'] }}
+                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $statusClasses[$product->status] ?? 'bg-stone-100 text-stone-700' }}">
+                                        {{ $product->status }}
                                     </span>
                                 </td>
                                 <td class="py-3 text-right">
                                     <button type="button" class="text-sm font-semibold text-amber-600 hover:text-amber-500">Edit</button>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="6" class="py-8 text-center text-stone-500">Belum ada produk yang tersimpan di database.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

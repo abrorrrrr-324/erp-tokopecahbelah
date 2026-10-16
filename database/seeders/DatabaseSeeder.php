@@ -48,5 +48,7 @@ class DatabaseSeeder extends Seeder
                 'password' => 'customer123',
             ]
         );
+
+        $this->call(ProductSeeder::class);
     }
 }

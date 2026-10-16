@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminCatalogController;
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('landing');
@@ -20,7 +21,6 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
-
 // ===============================
 // ADMIN TOKO
 // ===============================
@@ -31,9 +31,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         return view('dashboard.admin');
     })->name('admin.dashboard');
 
-    Route::get('/admin/katalog', function () {
-        return view('admin.katalog');
-    })->name('admin.katalog');
+    Route::get('/admin/katalog', AdminCatalogController::class)->name('admin.katalog');
 
     Route::get('/admin/customer', function () {
         return view('admin.customer');
@@ -61,7 +59,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 });
 
-
 // ===============================
 // KEPALA GUDANG
 // ===============================
@@ -74,7 +71,6 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
 
 });
 
-
 // ===============================
 // SUPPLIER
 // ===============================
@@ -86,7 +82,6 @@ Route::middleware(['auth', 'role:supplier'])->group(function () {
     })->name('supplier.dashboard');
 
 });
-
 
 // ===============================
 // CUSTOMER

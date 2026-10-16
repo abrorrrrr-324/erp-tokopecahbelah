@@ -31,11 +31,55 @@
     </nav>
 
     <div class="mt-8 border-t border-white/10 p-4">
-        <form action="{{ route('logout') }}" method="POST" class="mt-4">
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="mt-4">
             @csrf
-            <button type="submit" class="w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition {{ $config['button_class'] ?? 'bg-amber-500 text-stone-900 hover:bg-amber-400' }}">
+            <button type="button" id="logout-trigger" class="w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition {{ $config['button_class'] ?? 'bg-amber-500 text-stone-900 hover:bg-amber-400' }}">
                 Logout
             </button>
         </form>
     </div>
 </aside>
+
+<div id="logout-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-stone-950/60 p-4">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+        <p class="text-lg font-semibold text-stone-900">Apakah anda yakin ingin logout?</p>
+
+        <div class="mt-6 flex justify-end gap-3">
+            <button type="button" id="cancel-logout" class="rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100">
+                Tidak
+            </button>
+            <button type="button" id="confirm-logout" class="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-stone-900 transition hover:bg-amber-400">
+                Yakin
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('logout-modal');
+        const trigger = document.getElementById('logout-trigger');
+        const cancelBtn = document.getElementById('cancel-logout');
+        const confirmBtn = document.getElementById('confirm-logout');
+        const form = document.getElementById('logout-form');
+
+        if (!modal || !trigger || !cancelBtn || !confirmBtn || !form) {
+            return;
+        }
+
+        trigger.addEventListener('click', function (event) {
+            event.preventDefault();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+
+        cancelBtn.addEventListener('click', function () {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+
+        confirmBtn.addEventListener('click', function () {
+            form.submit();
+        });
+    });
+</script>

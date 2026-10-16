@@ -56,10 +56,6 @@
                         </p>
                     </div>
 
-                    <!-- Footer Panel -->
-                    <p class="text-xs text-stone-300">
-                        Praktis untuk kebutuhan sehari-hari.
-                    </p>
 
                 </div>
 
@@ -70,10 +66,6 @@
 
                         <!-- Judul Login -->
                         <div class="mb-7 text-center lg:text-left">
-
-                            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-amber-600">
-                                Login
-                            </p>
 
                             <h2 class="mt-2 text-2xl font-black text-stone-900">
                                 Selamat Datang!
@@ -147,15 +139,11 @@
                                 type="submit"
                                 class="inline-flex w-full items-center justify-center rounded-xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                             >
-                                Masuk ke Dashboard
+                                Login
                             </button>
 
                         </form>
 
-                        <!-- Keterangan -->
-                        <p class="mt-6 text-center text-xs text-stone-500 lg:text-left">
-                            Gunakan akun yang telah terdaftar untuk masuk.
-                        </p>
 
                     </div>
 
