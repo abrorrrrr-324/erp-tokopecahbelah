@@ -5,7 +5,11 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('landing');
+    if (auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->route('login');
 })->name('home');
 
 // ===============================
@@ -34,6 +38,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/katalog', [AdminCatalogController::class, 'index'])->name('admin.katalog');
     Route::get('/admin/katalog/create', [AdminCatalogController::class, 'create'])->name('admin.katalog.create');
     Route::post('/admin/katalog', [AdminCatalogController::class, 'store'])->name('admin.katalog.store');
+    Route::get('/admin/katalog/{product}', [AdminCatalogController::class, 'show'])->name('admin.katalog.show');
     Route::get('/admin/katalog/{product}/edit', [AdminCatalogController::class, 'edit'])->name('admin.katalog.edit');
     Route::put('/admin/katalog/{product}', [AdminCatalogController::class, 'update'])->name('admin.katalog.update');
     Route::delete('/admin/katalog/{product}', [AdminCatalogController::class, 'destroy'])->name('admin.katalog.destroy');

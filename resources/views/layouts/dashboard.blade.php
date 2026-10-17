@@ -128,6 +128,12 @@
             <div class="flex min-h-screen flex-1 flex-col">
                 @include('layouts.partials.topbar', ['config' => $config, 'user' => $user])
 
+                @if (session('success'))
+                    <div class="mx-6 mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm lg:mx-8">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
                 <main class="flex-1 p-6 lg:p-8">
                     @yield('content')
                 </main>

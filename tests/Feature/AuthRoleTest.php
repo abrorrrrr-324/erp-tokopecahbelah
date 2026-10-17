@@ -12,6 +12,13 @@ class AuthRoleTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_root_redirects_to_login_page(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertRedirect(route('login'));
+    }
+
     public function test_admin_can_login_and_redirect_to_admin_dashboard(): void
     {
         $user = User::factory()->create([

@@ -39,6 +39,13 @@ class AdminCatalogController extends Controller
         ]);
     }
 
+    public function show(Product $product): View
+    {
+        return view('admin.katalog-detail', [
+            'product' => $product,
+        ]);
+    }
+
     public function edit(Product $product): View
     {
         return view('admin.katalog-form', [

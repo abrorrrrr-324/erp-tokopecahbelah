@@ -30,24 +30,6 @@
             </a>
         </div>
 
-        <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <div class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-stone-500">Total Produk</p>
-                <p class="mt-3 text-3xl font-black text-stone-900">{{ $totalProduk }}</p>
-            </div>
-            <div class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-stone-500">Stok Rendah</p>
-                <p class="mt-3 text-3xl font-black text-stone-900">{{ $stokRendah }}</p>
-            </div>
-            <div class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-stone-500">Kategori</p>
-                <p class="mt-3 text-3xl font-black text-stone-900">{{ $kategori }}</p>
-            </div>
-            <div class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-stone-500">Nilai Produk</p>
-                <p class="mt-3 text-3xl font-black text-stone-900">Rp {{ number_format($penjualanBulanIni, 0, ',', '.') }}</p>
-            </div>
-        </section>
 
         <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
             <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -91,8 +73,9 @@
                                 </td>
                                 <td class="py-3 text-right">
                                     <div class="flex justify-end gap-3">
+                                        <a href="{{ route('admin.katalog.show', $product) }}" class="text-sm font-semibold text-stone-600 hover:text-stone-500">Detail</a>
                                         <a href="{{ route('admin.katalog.edit', $product) }}" class="text-sm font-semibold text-amber-600 hover:text-amber-500">Edit</a>
-                                        <form action="{{ route('admin.katalog.destroy', $product) }}" method="POST" onsubmit="return confirm('Hapus produk ini?')">
+                                        <form action="{{ route('admin.katalog.destroy', $product) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk {{ addslashes($product->name) }}?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-500">Hapus</button>
