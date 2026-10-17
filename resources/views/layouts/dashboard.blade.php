@@ -12,7 +12,7 @@
     $menuByRole = [
         'admin' => [
             ['label' => 'Dashboard', 'icon' => '🏠', 'route' => 'admin.dashboard'],
-            ['label' => 'Katalog', 'icon' => '📦', 'route' => 'admin.katalog'],
+            ['label' => 'Master Katalog', 'icon' => '📦', 'route' => 'admin.katalog'],
             ['label' => 'Customer', 'icon' => '👥', 'route' => 'admin.customer'],
             ['label' => 'Supplier', 'icon' => '🏭', 'route' => 'admin.supplier'],
             ['label' => 'Transaksi', 'icon' => '🧾', 'route' => 'admin.transaksi'],

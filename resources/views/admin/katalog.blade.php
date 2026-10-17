@@ -1,8 +1,8 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Katalog Produk')
+@section('title', 'Master Katalog')
 @section('page_kicker', 'Admin')
-@section('page_title', 'Katalog Produk')
+@section('page_title', 'Master Katalog')
 
 @section('content')
     @php
@@ -14,14 +14,20 @@
     @endphp
 
     <div class="space-y-6">
+        @if (session('success'))
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <div class="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p class="text-sm text-stone-500">Kelola katalog produk toko</p>
                 <h2 class="mt-1 text-2xl font-bold text-stone-900">Daftar Produk</h2>
             </div>
-            <button type="button" class="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400">
+            <a href="{{ route('admin.katalog.create') }}" class="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400">
                 + Tambah Produk
-            </button>
+            </a>
         </div>
 
         <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -66,8 +72,15 @@
                     </thead>
                     <tbody>
                         @forelse ($products as $product)
-                            <tr class="border-b border-stone-100 last:border-0">
-                                <td class="py-3 pr-4 font-semibold text-stone-900">{{ $product->name }}</td>
+                            <tr class="border-b border-stone-100 last:border-0 align-middle">
+                                <td class="py-3 pr-4">
+                                    <div class="flex items-center gap-3">
+                                        <img src="{{ $product->photo ? Storage::url($product->photo) : 'https://placehold.co/80x80/f5f5f4/1c1917?text=Produk' }}" alt="{{ $product->name }}" class="h-12 w-12 rounded-xl object-cover ring-1 ring-stone-200">
+                                        <div>
+                                            <p class="font-semibold text-stone-900">{{ $product->name }}</p>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="py-3 pr-4">{{ $product->category }}</td>
                                 <td class="py-3 pr-4">{{ $product->stock }}</td>
                                 <td class="py-3 pr-4">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
@@ -77,7 +90,14 @@
                                     </span>
                                 </td>
                                 <td class="py-3 text-right">
-                                    <button type="button" class="text-sm font-semibold text-amber-600 hover:text-amber-500">Edit</button>
+                                    <div class="flex justify-end gap-3">
+                                        <a href="{{ route('admin.katalog.edit', $product) }}" class="text-sm font-semibold text-amber-600 hover:text-amber-500">Edit</a>
+                                        <form action="{{ route('admin.katalog.destroy', $product) }}" method="POST" onsubmit="return confirm('Hapus produk ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-500">Hapus</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty

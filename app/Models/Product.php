@@ -18,6 +18,7 @@ class Product extends Model
         'stock',
         'price',
         'status',
+        'photo',
         'created_by',
     ];
 

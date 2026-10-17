@@ -31,7 +31,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         return view('dashboard.admin');
     })->name('admin.dashboard');
 
-    Route::get('/admin/katalog', AdminCatalogController::class)->name('admin.katalog');
+    Route::get('/admin/katalog', [AdminCatalogController::class, 'index'])->name('admin.katalog');
+    Route::get('/admin/katalog/create', [AdminCatalogController::class, 'create'])->name('admin.katalog.create');
+    Route::post('/admin/katalog', [AdminCatalogController::class, 'store'])->name('admin.katalog.store');
+    Route::get('/admin/katalog/{product}/edit', [AdminCatalogController::class, 'edit'])->name('admin.katalog.edit');
+    Route::put('/admin/katalog/{product}', [AdminCatalogController::class, 'update'])->name('admin.katalog.update');
+    Route::delete('/admin/katalog/{product}', [AdminCatalogController::class, 'destroy'])->name('admin.katalog.destroy');
 
     Route::get('/admin/customer', function () {
         return view('admin.customer');
