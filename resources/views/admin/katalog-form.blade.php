@@ -88,7 +88,7 @@
                         Batal
                     </a>
                     <button type="submit" class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-stone-900 transition hover:bg-amber-400">
-                        {{ $isEditing ? 'Simpan Perubahan' : 'Simpan Produk' }}
+                        {{ $isEditing ? 'Simpan Perubahan' : 'Tambah Produk' }}
                     </button>
                 </div>
             </form>
