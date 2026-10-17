@@ -46,6 +46,26 @@ class AdminCatalogController extends Controller
         ]);
     }
 
+    public function gudangIndex(): View
+    {
+        return $this->catalogIndexView('kepala_gudang');
+    }
+
+    public function gudangShow(Product $product): View
+    {
+        return $this->catalogDetailView($product, 'kepala_gudang');
+    }
+
+    public function customerIndex(): View
+    {
+        return $this->catalogIndexView('customer');
+    }
+
+    public function customerShow(Product $product): View
+    {
+        return $this->catalogDetailView($product, 'customer');
+    }
+
     public function edit(Product $product): View
     {
         return view('admin.katalog-form', [
@@ -110,5 +130,27 @@ class AdminCatalogController extends Controller
         if ($photoPath && Storage::disk('public')->exists($photoPath)) {
             Storage::disk('public')->delete($photoPath);
         }
+    }
+
+    protected function catalogIndexView(string $role): View
+    {
+        $products = Product::query()
+            ->latest('updated_at')
+            ->latest('id')
+            ->get();
+
+        return view('catalog.index', [
+            'products' => $products,
+            'role' => $role,
+        ]);
+    }
+
+    protected function catalogDetailView(Product $product, string $role): View
+    {
+        return view('catalog.detail', [
+            'product' => $product,
+            'role' => $role,
+            'backRoute' => $role === 'customer' ? route('customer.katalog') : route('gudang.katalog'),
+        ]);
     }
 }

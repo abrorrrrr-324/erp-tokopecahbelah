@@ -71,4 +71,40 @@ class AdminCatalogTest extends TestCase
         $this->assertNotNull($product->photo);
         Storage::disk('public')->assertExists($product->photo);
     }
+
+    public function test_gudang_and_customer_can_view_catalog_pages(): void
+    {
+        Product::create([
+            'name' => 'Lemari Minimalis',
+            'category' => 'Furniture',
+            'stock' => 12,
+            'price' => 2450000,
+            'status' => 'Aktif',
+            'created_by' => User::factory()->create(['role' => 'admin'])->id,
+        ]);
+
+        $gudang = User::factory()->create([
+            'name' => 'Kepala Gudang',
+            'email' => 'gudang@toko.test',
+            'role' => 'kepala_gudang',
+        ]);
+
+        $customer = User::factory()->create([
+            'name' => 'Customer',
+            'email' => 'customer@toko.test',
+            'role' => 'customer',
+        ]);
+
+        $this->actingAs($gudang)
+            ->get(route('gudang.katalog'))
+            ->assertOk()
+            ->assertSee('Lemari Minimalis')
+            ->assertSee('Katalog Barang');
+
+        $this->actingAs($customer)
+            ->get(route('customer.katalog'))
+            ->assertOk()
+            ->assertSee('Lemari Minimalis')
+            ->assertSee('Katalog Barang');
+    }
 }

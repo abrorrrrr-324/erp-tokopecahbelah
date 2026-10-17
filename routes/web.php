@@ -79,6 +79,9 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
         return view('dashboard.gudang');
     })->name('gudang.dashboard');
 
+    Route::get('/gudang/katalog', [AdminCatalogController::class, 'gudangIndex'])->name('gudang.katalog');
+    Route::get('/gudang/katalog/{product}', [AdminCatalogController::class, 'gudangShow'])->name('gudang.katalog.show');
+
 });
 
 // ===============================
@@ -102,6 +105,9 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('/customer/dashboard', function () {
         return view('dashboard.customer');
     })->name('customer.dashboard');
+
+    Route::get('/customer/katalog', [AdminCatalogController::class, 'customerIndex'])->name('customer.katalog');
+    Route::get('/customer/katalog/{product}', [AdminCatalogController::class, 'customerShow'])->name('customer.katalog.show');
 
     Route::get('/costumer/dashboard', function () {
         return view('dashboard.customer');
