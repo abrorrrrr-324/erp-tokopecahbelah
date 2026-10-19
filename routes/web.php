@@ -33,7 +33,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
-        return view('dashboard.admin');
+        return view('admin.dashboard');
     })->name('admin.dashboard');
 
     Route::get('/admin/katalog', [AdminCatalogController::class, 'index'])->name('admin.katalog');
@@ -61,19 +61,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('/admin/supplier/{user}', [AdminUserController::class, 'destroySupplier'])->name('admin.supplier.destroy');
 
     Route::get('/admin/transaksi', function () {
-        return view('admin.transaksi');
+        return view('admin.transaksi.index');
     })->name('admin.transaksi');
 
     Route::get('/admin/pembelian', function () {
-        return view('admin.pembelian');
+        return view('admin.pembelian.index');
     })->name('admin.pembelian');
 
     Route::get('/admin/stok', function () {
-        return view('admin.stok');
+        return view('admin.stok.index');
     })->name('admin.stok');
 
     Route::get('/admin/laporan', function () {
-        return view('admin.laporan');
+        return view('admin.laporan.index');
     })->name('admin.laporan');
 
 });
@@ -85,7 +85,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
 
     Route::get('/gudang/dashboard', function () {
-        return view('dashboard.gudang');
+        return view('kepalagudang.dashboard');
     })->name('gudang.dashboard');
 
     Route::get('/gudang/katalog', [AdminCatalogController::class, 'gudangIndex'])->name('gudang.katalog');
@@ -100,7 +100,7 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
 Route::middleware(['auth', 'role:supplier'])->group(function () {
 
     Route::get('/supplier/dashboard', function () {
-        return view('dashboard.supplier');
+        return view('supplier.dashboard');
     })->name('supplier.dashboard');
 
 });
@@ -112,14 +112,14 @@ Route::middleware(['auth', 'role:supplier'])->group(function () {
 Route::middleware(['auth', 'role:customer'])->group(function () {
 
     Route::get('/customer/dashboard', function () {
-        return view('dashboard.customer');
+        return view('customer.dashboard');
     })->name('customer.dashboard');
 
     Route::get('/customer/katalog', [AdminCatalogController::class, 'customerIndex'])->name('customer.katalog');
     Route::get('/customer/katalog/{product}', [AdminCatalogController::class, 'customerShow'])->name('customer.katalog.show');
 
     Route::get('/costumer/dashboard', function () {
-        return view('dashboard.customer');
+        return view('customer.dashboard');
     })->name('costumer.dashboard');
 
 });

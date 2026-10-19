@@ -12,7 +12,7 @@ class AdminUserController extends Controller
 {
     public function customerIndex(): View
     {
-        return view('admin.customer', [
+        return view('admin.customer.index', [
             'customers' => $this->usersByRole('customer'),
             'stats' => $this->statsForRole('customer'),
         ]);
@@ -20,7 +20,7 @@ class AdminUserController extends Controller
 
     public function customerCreate(): View
     {
-        return view('admin.customer-create', [
+        return view('admin.customer.create', [
             'customer' => new User,
         ]);
     }
@@ -29,7 +29,7 @@ class AdminUserController extends Controller
     {
         abort_unless($user->role === 'customer', 404);
 
-        return view('admin.customer-show', [
+        return view('admin.customer.show', [
             'customer' => $user,
         ]);
     }
@@ -38,7 +38,7 @@ class AdminUserController extends Controller
     {
         abort_unless($user->role === 'customer', 404);
 
-        return view('admin.customer-edit', [
+        return view('admin.customer.edit', [
             'customer' => $user,
         ]);
     }
@@ -96,7 +96,7 @@ class AdminUserController extends Controller
 
     public function supplierIndex(): View
     {
-        return view('admin.supplier', [
+        return view('admin.supplier.index', [
             'suppliers' => $this->usersByRole('supplier'),
             'stats' => $this->statsForRole('supplier'),
         ]);
@@ -104,7 +104,7 @@ class AdminUserController extends Controller
 
     public function supplierCreate(): View
     {
-        return view('admin.supplier-create', [
+        return view('admin.supplier.create', [
             'supplier' => new User,
         ]);
     }
@@ -113,7 +113,7 @@ class AdminUserController extends Controller
     {
         abort_unless($user->role === 'supplier', 404);
 
-        return view('admin.supplier-show', [
+        return view('admin.supplier.show', [
             'supplier' => $user,
         ]);
     }
@@ -122,7 +122,7 @@ class AdminUserController extends Controller
     {
         abort_unless($user->role === 'supplier', 404);
 
-        return view('admin.supplier-edit', [
+        return view('admin.supplier.edit', [
             'supplier' => $user,
         ]);
     }

@@ -22,7 +22,7 @@ class AdminCatalogController extends Controller
         $kategori = $products->pluck('category')->filter()->unique()->count();
         $penjualanBulanIni = $products->sum('price');
 
-        return view('admin.katalog', compact(
+        return view('admin.katalog.index', compact(
             'products',
             'totalProduk',
             'stokRendah',
@@ -33,15 +33,14 @@ class AdminCatalogController extends Controller
 
     public function create(): View
     {
-        return view('admin.katalog-form', [
+        return view('admin.katalog.create', [
             'product' => new Product,
-            'isEditing' => false,
         ]);
     }
 
     public function show(Product $product): View
     {
-        return view('admin.katalog-detail', [
+        return view('admin.katalog.show', [
             'product' => $product,
         ]);
     }
@@ -68,9 +67,8 @@ class AdminCatalogController extends Controller
 
     public function edit(Product $product): View
     {
-        return view('admin.katalog-form', [
+        return view('admin.katalog.edit', [
             'product' => $product,
-            'isEditing' => true,
         ]);
     }
 
