@@ -69,7 +69,7 @@
                                     <div class="flex justify-end gap-3">
                                         <a href="{{ route('admin.katalog.show', $product) }}" class="text-sm font-semibold text-stone-600 hover:text-stone-500">Detail</a>
                                         <a href="{{ route('admin.katalog.edit', $product) }}" class="text-sm font-semibold text-amber-600 hover:text-amber-500">Edit</a>
-                                        <form action="{{ route('admin.katalog.destroy', $product) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk {{ addslashes($product->name) }}?')">
+                                        <form action="{{ route('admin.katalog.destroy', $product) }}" method="POST" onsubmit="return confirm('Apakah anda yakin ingin menghapus produk {{ addslashes($product->name) }}?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-500">Hapus</button>

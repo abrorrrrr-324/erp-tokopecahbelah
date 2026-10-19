@@ -33,7 +33,7 @@
                 enctype="multipart/form-data"
                 class="mt-6 grid gap-5 md:grid-cols-2"
                 @if ($isEditing)
-                    onsubmit="return confirm('Apakah Anda yakin ingin mengubah data produk ini?');"
+                    onsubmit="return confirm('Apakah anda yakin ingin mengubah data produk ini?');"
                 @endif
             >
                 @csrf

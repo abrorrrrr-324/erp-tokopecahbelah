@@ -108,6 +108,32 @@ class AdminCatalogTest extends TestCase
             ->assertSee('Katalog Barang');
     }
 
+    public function test_admin_catalog_confirmation_messages_use_logout_style_copy(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $product = Product::create([
+            'name' => 'Kursi Kayu Minimalis',
+            'category' => 'Furniture',
+            'stock' => 32,
+            'price' => 1250000,
+            'status' => 'Aktif',
+            'created_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.katalog'))
+            ->assertOk()
+            ->assertSee('Apakah anda yakin ingin menghapus produk Kursi Kayu Minimalis?');
+
+        $this->actingAs($admin)
+            ->get(route('admin.katalog.edit', $product))
+            ->assertOk()
+            ->assertSee('Apakah anda yakin ingin mengubah data produk ini?');
+    }
+
     public function test_admin_can_manage_customer_and_supplier_records(): void
     {
         $admin = User::factory()->create([
