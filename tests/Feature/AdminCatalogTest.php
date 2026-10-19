@@ -107,4 +107,45 @@ class AdminCatalogTest extends TestCase
             ->assertSee('Lemari Minimalis')
             ->assertSee('Katalog Barang');
     }
+
+    public function test_admin_can_manage_customer_and_supplier_records(): void
+    {
+        $admin = User::factory()->create([
+            'name' => 'Admin Toko',
+            'email' => 'admin@toko.test',
+            'role' => 'admin',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.customer.store'), [
+                'name' => 'Budi Customer',
+                'email' => 'budi@customer.test',
+                'password' => 'password123',
+                'password_confirmation' => 'password123',
+            ])
+            ->assertRedirect(route('admin.customer'))
+            ->assertSessionHas('success', 'Customer berhasil ditambahkan.');
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'Budi Customer',
+            'email' => 'budi@customer.test',
+            'role' => 'customer',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.supplier.store'), [
+                'name' => 'PT Supplier Baru',
+                'email' => 'supplier@toko.test',
+                'password' => 'supplier123',
+                'password_confirmation' => 'supplier123',
+            ])
+            ->assertRedirect(route('admin.supplier'))
+            ->assertSessionHas('success', 'Supplier berhasil ditambahkan.');
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'PT Supplier Baru',
+            'email' => 'supplier@toko.test',
+            'role' => 'supplier',
+        ]);
+    }
 }

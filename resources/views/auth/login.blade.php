@@ -26,7 +26,7 @@
             <div class="grid min-h-[500px] lg:grid-cols-[1fr_1fr]">
 
                 <!-- Panel Informasi -->
-                <div class="hidden bg-gradient-to-br from-stone-900 via-stone-800 to-amber-500 p-8 text-white lg:flex lg:flex-col">
+                <div class="hidden bg-stone-950 p-8 text-white lg:flex lg:flex-col">
 
                     <!-- Logo dan Nama Toko -->
                     <div class="flex items-center gap-3">

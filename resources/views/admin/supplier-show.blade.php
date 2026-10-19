@@ -1,0 +1,43 @@
+@extends('layouts.dashboard')
+
+@section('title', 'Detail Supplier')
+@section('page_kicker', 'Admin')
+@section('page_title', 'Detail Supplier')
+
+@section('content')
+    <div class="mx-auto max-w-3xl rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <p class="text-sm text-stone-500">Informasi supplier</p>
+                <h2 class="text-2xl font-bold text-stone-900">{{ $supplier->name }}</h2>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('admin.supplier.edit', $supplier) }}" class="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400">
+                    Edit
+                </a>
+                <a href="{{ route('admin.supplier') }}" class="rounded-xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-50">
+                    Kembali
+                </a>
+            </div>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+            <div class="rounded-2xl bg-stone-50 p-4">
+                <p class="text-sm text-stone-500">Nama</p>
+                <p class="mt-2 text-lg font-bold text-stone-900">{{ $supplier->name }}</p>
+            </div>
+            <div class="rounded-2xl bg-stone-50 p-4">
+                <p class="text-sm text-stone-500">Email</p>
+                <p class="mt-2 text-lg font-bold text-stone-900">{{ $supplier->email }}</p>
+            </div>
+            <div class="rounded-2xl bg-stone-50 p-4">
+                <p class="text-sm text-stone-500">Role</p>
+                <p class="mt-2 text-lg font-bold text-stone-900">{{ ucfirst($supplier->role) }}</p>
+            </div>
+            <div class="rounded-2xl bg-stone-50 p-4">
+                <p class="text-sm text-stone-500">Dibuat</p>
+                <p class="mt-2 text-lg font-bold text-stone-900">{{ $supplier->created_at?->translatedFormat('d M Y') ?? '-' }}</p>
+            </div>
+        </div>
+    </div>
+@endsection
