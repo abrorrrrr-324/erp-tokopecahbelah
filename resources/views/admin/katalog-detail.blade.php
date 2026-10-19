@@ -13,9 +13,6 @@
                     <h2 class="mt-1 text-2xl font-bold text-stone-900">{{ $product->name }}</h2>
                 </div>
                 <div class="flex gap-3">
-                    <a href="{{ route('admin.katalog.edit', $product) }}" class="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400">
-                        Edit Produk
-                    </a>
                     <a href="{{ route('admin.katalog') }}" class="rounded-xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-stone-700 hover:border-stone-300 hover:bg-stone-50">
                         Kembali
                     </a>

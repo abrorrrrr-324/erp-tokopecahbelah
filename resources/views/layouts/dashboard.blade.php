@@ -128,11 +128,42 @@
             <div class="flex min-h-screen flex-1 flex-col">
                 @include('layouts.partials.topbar', ['config' => $config, 'user' => $user])
 
-                @if (session('success'))
-                    <div class="mx-6 mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm lg:mx-8">
-                        {{ session('success') }}
-                    </div>
-                @endif
+
+@if (session('success'))
+    <div
+        id="success-notification"
+        class="mx-6 mt-6 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm transition-opacity duration-500 lg:mx-8"
+        role="status"
+    >
+        <span>✓ {{ session('success') }}</span>
+
+        <button
+            type="button"
+            onclick="hideSuccessNotification()"
+            class="text-xl font-bold hover:text-emerald-900"
+            aria-label="Tutup notifikasi"
+        >
+            &times;
+        </button>
+    </div>
+
+    <script>
+        function hideSuccessNotification() {
+            const notification = document.getElementById('success-notification');
+
+            if (!notification) return;
+
+            notification.style.opacity = '0';
+
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }
+
+        setTimeout(hideSuccessNotification, 3000);
+    </script>
+@endif
+
 
                 <main class="flex-1 p-6 lg:p-8">
                     @yield('content')
