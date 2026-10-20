@@ -75,14 +75,20 @@ class AdminCatalogController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'sku' => ['nullable', 'string', 'max:50'],
             'name' => ['required', 'string', 'max:255'],
             'category' => ['required', 'string', 'max:255'],
             'stock' => ['required', 'integer', 'min:0'],
             'price' => ['required', 'integer', 'min:0'],
+            'buy_price' => ['nullable', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'unit' => ['nullable', 'string', 'max:30'],
+            'minimum_stock' => ['nullable', 'integer', 'min:0'],
             'status' => ['required', 'string', 'max:50'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
+        $validated['sku'] = $validated['sku'] ?? 'PRD-'.strtoupper(substr(sha1((string) now()->timestamp.random_int(1000, 9999)), 0, 8));
         $validated['created_by'] = auth()->user()?->id;
 
         if ($request->hasFile('photo')) {
@@ -97,10 +103,15 @@ class AdminCatalogController extends Controller
     public function update(Request $request, Product $product): RedirectResponse
     {
         $validated = $request->validate([
+            'sku' => ['nullable', 'string', 'max:50'],
             'name' => ['required', 'string', 'max:255'],
             'category' => ['required', 'string', 'max:255'],
             'stock' => ['required', 'integer', 'min:0'],
             'price' => ['required', 'integer', 'min:0'],
+            'buy_price' => ['nullable', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'unit' => ['nullable', 'string', 'max:30'],
+            'minimum_stock' => ['nullable', 'integer', 'min:0'],
             'status' => ['required', 'string', 'max:50'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
@@ -109,6 +120,8 @@ class AdminCatalogController extends Controller
             $this->deletePhotoIfExists($product->photo);
             $validated['photo'] = $request->file('photo')->store('products', 'public');
         }
+
+        $validated['sku'] = $validated['sku'] ?? ($product->sku ?? 'PRD-'.strtoupper(substr(sha1((string) now()->timestamp.random_int(1000, 9999)), 0, 8)));
 
         $product->update($validated);
 

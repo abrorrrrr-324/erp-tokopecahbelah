@@ -7,10 +7,10 @@
 @section('content')
     @php
         $stats = [
-            ['title' => 'Total Penjualan', 'value' => 'Rp 24,8 Jt'],
-            ['title' => 'Pesanan Baru', 'value' => '18'],
-            ['title' => 'Customer', 'value' => '312'],
-            ['title' => 'Supplier', 'value' => '14'],
+            ['title' => 'Total Produk', 'value' => $totalProduk ?? 0],
+            ['title' => 'Stok Tersedia', 'value' => $totalStok ?? 0],
+            ['title' => 'Customer', 'value' => $customerCount ?? 0],
+            ['title' => 'Supplier', 'value' => $supplierCount ?? 0],
         ];
     @endphp
 

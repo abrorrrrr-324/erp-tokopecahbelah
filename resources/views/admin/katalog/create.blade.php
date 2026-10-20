@@ -12,15 +12,7 @@
                     <p class="text-sm text-stone-500">Tambahkan produk ke katalog</p>
                     <h2 class="mt-1 text-2xl font-bold text-stone-900">Tambah Produk Baru</h2>
                 </div>
-
-                <a
-                    href="{{ route('admin.katalog') }}"
-                    class="rounded-xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-stone-700 hover:border-stone-300 hover:bg-stone-50"
-                >
-                    Kembali
-                </a>
             </div>
-
             @include('admin.katalog._form', ['product' => $product, 'isEditing' => false])
         </div>
     </div>

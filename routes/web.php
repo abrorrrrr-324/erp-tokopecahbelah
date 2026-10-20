@@ -3,7 +3,10 @@
 use App\Http\Controllers\AdminCatalogController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -33,7 +36,19 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
+        $productTable = Schema::hasTable('products') ? 'products' : (Schema::hasTable('produk') ? 'produk' : null);
+        $totalProduk = $productTable ? Product::query()->from($productTable)->count() : 0;
+        $stockColumn = $productTable === 'produk' ? 'stok' : 'stock';
+        $totalStok = $productTable ? (int) Product::query()->from($productTable)->sum($stockColumn) : 0;
+        $customerCount = User::query()->where('role', 'customer')->count();
+        $supplierCount = User::query()->where('role', 'supplier')->count();
+
+        return view('admin.dashboard', compact(
+            'totalProduk',
+            'totalStok',
+            'customerCount',
+            'supplierCount',
+        ));
     })->name('admin.dashboard');
 
     Route::get('/admin/katalog', [AdminCatalogController::class, 'index'])->name('admin.katalog');

@@ -95,7 +95,7 @@
     <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-stone-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
         <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
             <p id="delete-modal-title" class="text-lg font-semibold text-stone-900">
-                Apakah anda yakin ingin menghapus produk <span id="delete-product-name" class="font-bold text-red-600"></span>?
+                Apakah anda yakin ingin menghapus produk {{ $products->first()->name ?? '' }}?
             </p>
             <div class="mt-6 flex justify-end gap-3">
                 <button type="button" id="cancel-delete" class="rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100">Tidak</button>
@@ -108,7 +108,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const modal = document.getElementById('delete-modal');
-            const productName = document.getElementById('delete-product-name');
+            const modalTitle = document.getElementById('delete-modal-title');
             const cancelBtn = document.getElementById('cancel-delete');
             const confirmBtn = document.getElementById('confirm-delete');
             let selectedForm = null;
@@ -118,7 +118,7 @@
                     selectedForm = this.closest('[data-delete-form]');
                     if (!selectedForm) return;
 
-                    productName.textContent = selectedForm.dataset.productName;
+                    modalTitle.textContent = 'Apakah anda yakin ingin menghapus produk ' + selectedForm.dataset.productName + '?';
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
                     cancelBtn.focus();

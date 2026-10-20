@@ -4,6 +4,13 @@
     @csrf
     @if ($isEditing) @method('PUT') @endif
 
+    {{-- SKU --}}
+    <div class="space-y-2">
+        <label for="sku" class="text-sm font-medium text-stone-700">SKU</label>
+        <input id="sku" name="sku" type="text" value="{{ old('sku', $product->sku ?? '') }}" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" placeholder="Contoh: PRD-001">
+        @error('sku') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+    </div>
+
     {{-- Nama Produk --}}
     <div class="space-y-2">
         <label for="name" class="text-sm font-medium text-stone-700">Nama Produk</label>
@@ -18,18 +25,46 @@
         @error('category') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
     </div>
 
+    {{-- Satuan --}}
+    <div class="space-y-2">
+        <label for="unit" class="text-sm font-medium text-stone-700">Satuan</label>
+        <input id="unit" name="unit" type="text" value="{{ old('unit', $product->unit ?? 'pcs') }}" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" placeholder="Contoh: pcs, box, set">
+        @error('unit') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+    </div>
+
+    {{-- Harga Beli --}}
+    <div class="space-y-2">
+        <label for="buy_price" class="text-sm font-medium text-stone-700">Harga Beli</label>
+        <input id="buy_price" name="buy_price" type="number" min="0" value="{{ old('buy_price', $product->buy_price ?? $product->harga_beli ?? 0) }}" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white">
+        @error('buy_price') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+    </div>
+
+    {{-- Harga Jual --}}
+    <div class="space-y-2">
+        <label for="price" class="text-sm font-medium text-stone-700">Harga Jual</label>
+        <input id="price" name="price" type="number" min="0" value="{{ old('price', $product->price ?? $product->harga_jual ?? 0) }}" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" required>
+        @error('price') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+    </div>
+
     {{-- Stok --}}
     <div class="space-y-2">
         <label for="stock" class="text-sm font-medium text-stone-700">Stok</label>
-        <input id="stock" name="stock" type="number" min="0" value="{{ old('stock', $product->stock ?? 0) }}" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" required>
+        <input id="stock" name="stock" type="number" min="0" value="{{ old('stock', $product->stock ?? $product->stok ?? 0) }}" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" required>
         @error('stock') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
     </div>
 
-    {{-- Harga --}}
+    {{-- Stok Minimum --}}
     <div class="space-y-2">
-        <label for="price" class="text-sm font-medium text-stone-700">Harga</label>
-        <input id="price" name="price" type="number" min="0" value="{{ old('price', $product->price ?? 0) }}" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" required>
-        @error('price') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+        <label for="minimum_stock" class="text-sm font-medium text-stone-700">Stok Minimum</label>
+        <input id="minimum_stock" name="minimum_stock" type="number" min="0" value="{{ old('minimum_stock', $product->minimum_stock ?? $product->stok_minimum ?? 0) }}" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white">
+        @error('minimum_stock') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+    </div>
+
+    {{-- Deskripsi --}}
+    <div class="space-y-2 md:col-span-2">
+        <label for="description" class="text-sm font-medium text-stone-700">Deskripsi</label>
+        <textarea id="description" name="description" rows="4" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" placeholder="Masukkan deskripsi produk">{{ old('description', $product->description ?? $product->deskripsi ?? '') }}</textarea>
+        @error('description') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
     </div>
 
     {{-- Status --}}
@@ -37,7 +72,7 @@
         <label for="status" class="text-sm font-medium text-stone-700">Status</label>
         @php $selectedStatus = old('status', $product->status ?? 'Aktif'); @endphp
         <select id="status" name="status" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" required>
-            @foreach (['Aktif', 'Promo', 'Hampir habis'] as $status)
+            @foreach (['Aktif', 'Promo', 'Hampir habis', 'Nonaktif'] as $status)
                 <option value="{{ $status }}" @selected($selectedStatus === $status)>{{ $status }}</option>
             @endforeach
         </select>

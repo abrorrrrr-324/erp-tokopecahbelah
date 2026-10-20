@@ -58,7 +58,7 @@ class AdminUserController extends Controller
             'role' => 'customer',
         ]);
 
-        return redirect()->route('admin.customer.show', $customer)->with('success', 'Customer berhasil ditambahkan.');
+        return redirect()->route('admin.customer')->with('success', 'Customer berhasil ditambahkan.');
     }
 
     public function updateCustomer(Request $request, User $user): RedirectResponse
@@ -67,7 +67,7 @@ class AdminUserController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -142,7 +142,7 @@ class AdminUserController extends Controller
             'role' => 'supplier',
         ]);
 
-        return redirect()->route('admin.supplier.show', $supplier)->with('success', 'Supplier berhasil ditambahkan.');
+        return redirect()->route('admin.supplier')->with('success', 'Supplier berhasil ditambahkan.');
     }
 
     public function updateSupplier(Request $request, User $user): RedirectResponse
@@ -151,7 +151,7 @@ class AdminUserController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
