@@ -49,16 +49,26 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'name.required' => 'Nama customer wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        $customer = User::query()->create([
+        User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => 'customer',
         ]);
 
-        return redirect()->route('admin.customer')->with('success', 'Customer berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.customer')
+            ->with('success', 'Customer berhasil ditambahkan.');
     }
 
     public function updateCustomer(Request $request, User $user): RedirectResponse
@@ -82,7 +92,7 @@ class AdminUserController extends Controller
 
         $user->save();
 
-        return redirect()->route('admin.customer.show', $user)->with('success', 'Data customer berhasil diperbarui.');
+        return redirect()->route('admin.customer')->with('success', 'Data customer berhasil diperbarui.');
     }
 
     public function destroyCustomer(User $user): RedirectResponse
@@ -135,7 +145,7 @@ class AdminUserController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $supplier = User::query()->create([
+        User::query()->create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
@@ -166,7 +176,7 @@ class AdminUserController extends Controller
 
         $user->save();
 
-        return redirect()->route('admin.supplier.show', $user)->with('success', 'Data supplier berhasil diperbarui.');
+        return redirect()->route('admin.supplier')->with('success', 'Data supplier berhasil diperbarui.');
     }
 
     public function destroySupplier(User $user): RedirectResponse

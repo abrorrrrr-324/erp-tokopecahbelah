@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -158,6 +159,9 @@ class AdminCatalogTest extends TestCase
             'role' => 'customer',
         ]);
 
+        $customer = User::query()->where('email', 'budi@customer.test')->firstOrFail();
+        $this->assertTrue(Hash::check('password123', $customer->password));
+
         $this->actingAs($admin)
             ->post(route('admin.supplier.store'), [
                 'name' => 'PT Supplier Baru',
@@ -173,5 +177,48 @@ class AdminCatalogTest extends TestCase
             'email' => 'supplier@toko.test',
             'role' => 'supplier',
         ]);
+    }
+
+    public function test_admin_update_for_customer_and_supplier_uses_catalog_style_redirects(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $customer = User::factory()->create([
+            'name' => 'Customer Lama',
+            'email' => 'lama@customer.test',
+            'role' => 'customer',
+        ]);
+
+        $supplier = User::factory()->create([
+            'name' => 'Supplier Lama',
+            'email' => 'lama@supplier.test',
+            'role' => 'supplier',
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.customer.update', $customer), [
+                'name' => 'Customer Baru',
+                'email' => 'baru@customer.test',
+                'password' => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ])
+            ->assertRedirect(route('admin.customer'))
+            ->assertSessionHas('success', 'Data customer berhasil diperbarui.');
+
+        $this->assertTrue(Hash::check('newpassword123', $customer->fresh()->password));
+
+        $this->actingAs($admin)
+            ->put(route('admin.supplier.update', $supplier), [
+                'name' => 'Supplier Baru',
+                'email' => 'baru@supplier.test',
+                'password' => 'newsupplier123',
+                'password_confirmation' => 'newsupplier123',
+            ])
+            ->assertRedirect(route('admin.supplier'))
+            ->assertSessionHas('success', 'Data supplier berhasil diperbarui.');
+
+        $this->assertTrue(Hash::check('newsupplier123', $supplier->fresh()->password));
     }
 }

@@ -18,6 +18,17 @@
 
         <form action="{{ route('admin.customer.store') }}" method="POST" class="space-y-5">
             @csrf
+            @if ($errors->any())
+    <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <p class="mb-2 font-semibold">Gagal menambahkan customer:</p>
+
+        <ul class="list-inside list-disc">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
             <div>
                 <label class="mb-1 block text-sm font-medium text-stone-700">Nama lengkap</label>
@@ -40,7 +51,7 @@
             </div>
 
             <button type="submit" class="w-full rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400">
-                Simpan Customer
+                Tambah Customer
             </button>
         </form>
     </div>

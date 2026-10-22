@@ -11,9 +11,6 @@
                 <p class="text-sm text-stone-500">Ubah data supplier</p>
                 <h2 class="text-2xl font-bold text-stone-900">{{ $supplier->name }}</h2>
             </div>
-            <a href="{{ route('admin.supplier.show', $supplier) }}" class="rounded-xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-50">
-                Detail
-            </a>
         </div>
 
         <form action="{{ route('admin.supplier.update', $supplier) }}" method="POST" class="space-y-5">

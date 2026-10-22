@@ -40,7 +40,7 @@
                             <th class="pb-3 font-semibold">Nama</th>
                             <th class="pb-3 font-semibold">Email</th>
                             <th class="pb-3 font-semibold">Dibuat</th>
-                            <th class="pb-3 font-semibold">Aksi</th>
+                            <th class="pb-3 text-right font-semibold">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,14 +49,14 @@
                                 <td class="py-3 pr-4 font-semibold text-stone-900">{{ $customer->name }}</td>
                                 <td class="py-3 pr-4">{{ $customer->email }}</td>
                                 <td class="py-3 pr-4">{{ $customer->created_at?->translatedFormat('d M Y') ?? '-' }}</td>
-                                <td class="py-3 pr-4">
-                                    <div class="flex flex-wrap gap-2">
-                                        <a href="{{ route('admin.customer.show', $customer) }}" class="rounded-lg bg-stone-100 px-2.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-200">Detail</a>
-                                        <a href="{{ route('admin.customer.edit', $customer) }}" class="rounded-lg bg-amber-100 px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-200">Edit</a>
-                                        <form action="{{ route('admin.customer.destroy', $customer) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus customer {{ addslashes($customer->name) }}?')">
+                                <td class="py-3 text-right">
+                                    <div class="flex justify-end gap-3">
+                                        <a href="{{ route('admin.customer.show', $customer) }}" class="font-semibold text-stone-600 hover:text-stone-500">Detail</a>
+                                        <a href="{{ route('admin.customer.edit', $customer) }}" class="font-semibold text-amber-600 hover:text-amber-500">Edit</a>
+                                        <form action="{{ route('admin.customer.destroy', $customer) }}" method="POST" data-delete-form data-product-name="{{ $customer->name }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="rounded-lg bg-red-100 px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200">Hapus</button>
+                                            <button type="button" data-delete-trigger class="font-semibold text-red-600 hover:text-red-500">Hapus</button>
                                         </form>
                                     </div>
                                 </td>
@@ -71,4 +71,58 @@
             </div>
         </div>
     </div>
+
+    <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-stone-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+        <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+            <p id="delete-modal-title" class="text-lg font-semibold text-stone-900">
+                Apakah anda yakin ingin menghapus customer {{ $customers->first()->name ?? '' }}?
+            </p>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" id="cancel-delete" class="rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100">Tidak</button>
+                <button type="button" id="confirm-delete" class="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-stone-900 transition hover:bg-amber-400">Iya</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('delete-modal');
+            const modalTitle = document.getElementById('delete-modal-title');
+            const cancelBtn = document.getElementById('cancel-delete');
+            const confirmBtn = document.getElementById('confirm-delete');
+            let selectedForm = null;
+
+            document.querySelectorAll('[data-delete-trigger]').forEach(button => {
+                button.addEventListener('click', function () {
+                    selectedForm = this.closest('[data-delete-form]');
+                    if (!selectedForm) return;
+
+                    modalTitle.textContent = 'Apakah anda yakin ingin menghapus customer ' + selectedForm.dataset.productName + '?';
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    cancelBtn.focus();
+                });
+            });
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                selectedForm = null;
+            }
+
+            cancelBtn.addEventListener('click', closeModal);
+
+            confirmBtn.addEventListener('click', function () {
+                if (selectedForm) selectedForm.submit();
+            });
+
+            modal.addEventListener('click', function (event) {
+                if (event.target === modal) closeModal();
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+            });
+        });
+    </script>
 @endsection

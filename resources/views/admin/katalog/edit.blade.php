@@ -23,7 +23,7 @@
     <div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-stone-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
         <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
             <p id="edit-modal-title" class="text-lg font-semibold text-stone-900">
-                Apakah anda yakin ingin mengubah data produk {{ $product->name }}?
+                Apakah anda yakin ingin mengubah data produk ini?
             </p>
 
             <div class="mt-6 flex justify-end gap-3">

@@ -12,9 +12,6 @@
                 <h2 class="text-2xl font-bold text-stone-900">{{ $customer->name }}</h2>
             </div>
             <div class="flex gap-2">
-                <a href="{{ route('admin.customer.edit', $customer) }}" class="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400">
-                    Edit
-                </a>
                 <a href="{{ route('admin.customer') }}" class="rounded-xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-50">
                     Kembali
                 </a>
