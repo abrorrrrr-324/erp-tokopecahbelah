@@ -10,6 +10,9 @@ use Illuminate\View\View;
 
 class AdminUserController extends Controller
 {
+    // ==================== MASTER CUSTOMER ====================
+
+    // Menampilkan daftar customer dan statistik
     public function customerIndex(): View
     {
         return view('admin.customer.index', [
@@ -18,31 +21,27 @@ class AdminUserController extends Controller
         ]);
     }
 
+    // Form tambah customer
     public function customerCreate(): View
     {
-        return view('admin.customer.create', [
-            'customer' => new User,
-        ]);
+        return view('admin.customer.create', ['customer' => new User]);
     }
 
+    // Detail customer
     public function customerShow(User $user): View
     {
         abort_unless($user->role === 'customer', 404);
-
-        return view('admin.customer.show', [
-            'customer' => $user,
-        ]);
+        return view('admin.customer.show', ['customer' => $user]);
     }
 
+    // Form edit customer
     public function customerEdit(User $user): View
     {
         abort_unless($user->role === 'customer', 404);
-
-        return view('admin.customer.edit', [
-            'customer' => $user,
-        ]);
+        return view('admin.customer.edit', ['customer' => $user]);
     }
 
+    // Simpan customer baru
     public function storeCustomer(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -66,18 +65,17 @@ class AdminUserController extends Controller
             'role' => 'customer',
         ]);
 
-        return redirect()
-            ->route('admin.customer')
-            ->with('success', 'Customer berhasil ditambahkan.');
+        return redirect()->route('admin.customer')->with('success', 'Customer berhasil ditambahkan.');
     }
 
+    // Perbarui data customer
     public function updateCustomer(Request $request, User $user): RedirectResponse
     {
         abort_unless($user->role === 'customer', 404);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -95,15 +93,18 @@ class AdminUserController extends Controller
         return redirect()->route('admin.customer')->with('success', 'Data customer berhasil diperbarui.');
     }
 
+    // Hapus customer
     public function destroyCustomer(User $user): RedirectResponse
     {
         abort_unless($user->role === 'customer', 404);
-
         $user->delete();
 
         return redirect()->route('admin.customer')->with('success', 'Customer berhasil dihapus.');
     }
 
+    // ==================== MASTER SUPPLIER ====================
+
+    // Menampilkan daftar supplier dan statistik
     public function supplierIndex(): View
     {
         return view('admin.supplier.index', [
@@ -112,31 +113,27 @@ class AdminUserController extends Controller
         ]);
     }
 
+    // Form tambah supplier
     public function supplierCreate(): View
     {
-        return view('admin.supplier.create', [
-            'supplier' => new User,
-        ]);
+        return view('admin.supplier.create', ['supplier' => new User]);
     }
 
+    // Detail supplier
     public function supplierShow(User $user): View
     {
         abort_unless($user->role === 'supplier', 404);
-
-        return view('admin.supplier.show', [
-            'supplier' => $user,
-        ]);
+        return view('admin.supplier.show', ['supplier' => $user]);
     }
 
+    // Form edit supplier
     public function supplierEdit(User $user): View
     {
         abort_unless($user->role === 'supplier', 404);
-
-        return view('admin.supplier.edit', [
-            'supplier' => $user,
-        ]);
+        return view('admin.supplier.edit', ['supplier' => $user]);
     }
 
+    // Simpan supplier baru
     public function storeSupplier(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -155,13 +152,14 @@ class AdminUserController extends Controller
         return redirect()->route('admin.supplier')->with('success', 'Supplier berhasil ditambahkan.');
     }
 
+    // Perbarui data supplier
     public function updateSupplier(Request $request, User $user): RedirectResponse
     {
         abort_unless($user->role === 'supplier', 404);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -179,23 +177,24 @@ class AdminUserController extends Controller
         return redirect()->route('admin.supplier')->with('success', 'Data supplier berhasil diperbarui.');
     }
 
+    // Hapus supplier
     public function destroySupplier(User $user): RedirectResponse
     {
         abort_unless($user->role === 'supplier', 404);
-
         $user->delete();
 
         return redirect()->route('admin.supplier')->with('success', 'Supplier berhasil dihapus.');
     }
 
+    // ==================== FUNGSI BANTUAN ====================
+
+    // Mengambil daftar user berdasarkan role, terbaru di urutan pertama
     protected function usersByRole(string $role)
     {
-        return User::query()
-            ->where('role', $role)
-            ->latest()
-            ->get();
+        return User::query()->where('role', $role)->latest()->get();
     }
 
+    // Menghitung statistik user berdasarkan role
     protected function statsForRole(string $role): array
     {
         $users = $this->usersByRole($role);

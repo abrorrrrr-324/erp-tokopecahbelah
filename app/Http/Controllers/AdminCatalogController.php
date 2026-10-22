@@ -10,12 +10,12 @@ use Illuminate\View\View;
 
 class AdminCatalogController extends Controller
 {
+    // ==================== KATALOG ADMIN ====================
+
+    // Menampilkan produk dan statistik katalog
     public function index(): View
     {
-        $products = Product::query()
-            ->latest('updated_at')
-            ->latest('id')
-            ->get();
+        $products = Product::query()->latest('updated_at')->latest('id')->get();
 
         $totalProduk = $products->count();
         $stokRendah = $products->where('stock', '<=', 10)->count();
@@ -23,55 +23,59 @@ class AdminCatalogController extends Controller
         $penjualanBulanIni = $products->sum('price');
 
         return view('admin.katalog.index', compact(
-            'products',
-            'totalProduk',
-            'stokRendah',
-            'kategori',
-            'penjualanBulanIni',
+            'products', 'totalProduk', 'stokRendah', 'kategori', 'penjualanBulanIni',
         ));
     }
 
+    // Form tambah produk
     public function create(): View
     {
-        return view('admin.katalog.create', [
-            'product' => new Product,
-        ]);
+        return view('admin.katalog.create', ['product' => new Product]);
     }
 
+    // Detail produk untuk admin
     public function show(Product $product): View
     {
-        return view('admin.katalog.show', [
-            'product' => $product,
-        ]);
+        return view('admin.katalog.show', ['product' => $product]);
     }
 
+    // ==================== KATALOG GUDANG ====================
+
+    // Daftar produk untuk kepala gudang
     public function gudangIndex(): View
     {
         return $this->catalogIndexView('kepala_gudang');
     }
 
+    // Detail produk untuk kepala gudang
     public function gudangShow(Product $product): View
     {
         return $this->catalogDetailView($product, 'kepala_gudang');
     }
 
+    // ==================== KATALOG CUSTOMER ====================
+
+    // Daftar produk untuk customer
     public function customerIndex(): View
     {
         return $this->catalogIndexView('customer');
     }
 
+    // Detail produk untuk customer
     public function customerShow(Product $product): View
     {
         return $this->catalogDetailView($product, 'customer');
     }
 
+    // ==================== CRUD PRODUK ADMIN ====================
+
+    // Form edit produk
     public function edit(Product $product): View
     {
-        return view('admin.katalog.edit', [
-            'product' => $product,
-        ]);
+        return view('admin.katalog.edit', ['product' => $product]);
     }
 
+    // Validasi dan simpan produk baru beserta foto
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -88,9 +92,11 @@ class AdminCatalogController extends Controller
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
+        // Membuat SKU otomatis jika tidak diisi
         $validated['sku'] = $validated['sku'] ?? 'PRD-'.strtoupper(substr(sha1((string) now()->timestamp.random_int(1000, 9999)), 0, 8));
         $validated['created_by'] = auth()->user()?->id;
 
+        // Upload foto ke storage public
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('products', 'public');
         }
@@ -100,6 +106,7 @@ class AdminCatalogController extends Controller
         return redirect()->route('admin.katalog')->with('success', 'Produk berhasil ditambahkan.');
     }
 
+    // Validasi dan perbarui produk
     public function update(Request $request, Product $product): RedirectResponse
     {
         $validated = $request->validate([
@@ -116,11 +123,13 @@ class AdminCatalogController extends Controller
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
+        // Hapus foto lama jika diganti dengan foto baru
         if ($request->hasFile('photo')) {
             $this->deletePhotoIfExists($product->photo);
             $validated['photo'] = $request->file('photo')->store('products', 'public');
         }
 
+        // Pertahankan SKU lama jika input SKU kosong
         $validated['sku'] = $validated['sku'] ?? ($product->sku ?? 'PRD-'.strtoupper(substr(sha1((string) now()->timestamp.random_int(1000, 9999)), 0, 8)));
 
         $product->update($validated);
@@ -128,6 +137,7 @@ class AdminCatalogController extends Controller
         return redirect()->route('admin.katalog')->with('success', 'Produk berhasil diperbarui.');
     }
 
+    // Hapus foto dan data produk
     public function destroy(Product $product): RedirectResponse
     {
         $this->deletePhotoIfExists($product->photo);
@@ -136,6 +146,9 @@ class AdminCatalogController extends Controller
         return redirect()->route('admin.katalog')->with('success', 'Produk berhasil dihapus.');
     }
 
+    // ==================== FUNGSI BANTUAN ====================
+
+    // Memeriksa keberadaan foto sebelum menghapusnya
     protected function deletePhotoIfExists(?string $photoPath): void
     {
         if ($photoPath && Storage::disk('public')->exists($photoPath)) {
@@ -143,12 +156,10 @@ class AdminCatalogController extends Controller
         }
     }
 
+    // Menampilkan daftar produk berdasarkan role
     protected function catalogIndexView(string $role): View
     {
-        $products = Product::query()
-            ->latest('updated_at')
-            ->latest('id')
-            ->get();
+        $products = Product::query()->latest('updated_at')->latest('id')->get();
 
         return view('catalog.index', [
             'products' => $products,
@@ -156,6 +167,7 @@ class AdminCatalogController extends Controller
         ]);
     }
 
+    // Menampilkan detail produk dan menentukan route kembali
     protected function catalogDetailView(Product $product, string $role): View
     {
         return view('catalog.detail', [
