@@ -37,6 +37,10 @@
                 <input type="password" name="password_confirmation" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm focus:border-amber-500 focus:outline-none">
             </div>
 
+            <button type="button" onclick="window.history.back()" class="w-full rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-100">
+                Batal
+            </button>
+
             <button type="submit" class="w-full rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400">
                 Simpan Perubahan
             </button>

@@ -20,6 +20,41 @@
             </div>
         </div>
 
+        @php
+            $catalogRoute = $role === 'kepala_gudang' ? route('gudang.katalog') : route('customer.katalog');
+        @endphp
+
+        <form action="{{ $catalogRoute }}" method="GET" class="mb-6 flex flex-col gap-3 sm:flex-row">
+            <div class="relative flex-1">
+                <svg class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m21 21-4.35-4.35m1.85-5.15a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+                </svg>
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Cari nama produk, kategori, atau status..."
+                    class="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100">
+            </div>
+
+            <button type="submit" class="rounded-xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-700">
+                Cari
+            </button>
+
+            @if (request('search'))
+                <a href="{{ $catalogRoute }}" class="inline-flex items-center justify-center rounded-xl border border-stone-200 px-5 py-3 text-sm font-semibold text-stone-600 transition hover:bg-stone-100">
+                    Reset
+                </a>
+            @endif
+        </form>
+
+        @if (request('search'))
+            <div class="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Hasil pencarian untuk <span class="font-semibold">"{{ request('search') }}"</span>:
+                <span class="font-semibold">{{ $products->count() }} produk ditemukan.</span>
+            </div>
+        @endif
+
         @if ($products->isEmpty())
             <div class="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-8 text-center text-sm text-stone-500">
                 Belum ada produk yang tersedia di katalog saat ini.

@@ -15,15 +15,40 @@ class AdminCatalogController extends Controller
     // Menampilkan produk dan statistik katalog
     public function index(): View
     {
-        $products = Product::query()->latest('updated_at')->latest('id')->get();
+        $search = request()->query('search');
 
-        $totalProduk = $products->count();
-        $stokRendah = $products->where('stock', '<=', 10)->count();
-        $kategori = $products->pluck('category')->filter()->unique()->count();
-        $penjualanBulanIni = $products->sum('price');
+        $query = Product::query();
+
+        if ($search !== null && $search !== '') {
+            $keyword = strtolower(trim((string) $search));
+
+            $query->where(function ($query) use ($keyword) {
+                $query->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
+                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%'])
+                    ->orWhereRaw('LOWER(status) LIKE ?', ['%' . $keyword . '%']);
+            });
+        }
+
+        $totalProduk = Product::count();
+        $stokRendah = Product::where('stock', '<=', 10)->count();
+        $kategori = Product::whereNotNull('category')
+            ->where('category', '<>', '')
+            ->distinct()
+            ->count('category');
+
+        $penjualanBulanIni = Product::sum('price');
+
+        $products = $query
+            ->latest('updated_at')
+            ->latest('id')
+            ->get();
 
         return view('admin.katalog.index', compact(
-            'products', 'totalProduk', 'stokRendah', 'kategori', 'penjualanBulanIni',
+            'products',
+            'totalProduk',
+            'stokRendah',
+            'kategori',
+            'penjualanBulanIni',
         ));
     }
 
@@ -93,7 +118,7 @@ class AdminCatalogController extends Controller
         ]);
 
         // Membuat SKU otomatis jika tidak diisi
-        $validated['sku'] = $validated['sku'] ?? 'PRD-'.strtoupper(substr(sha1((string) now()->timestamp.random_int(1000, 9999)), 0, 8));
+        $validated['sku'] = $validated['sku'] ?? 'PRD-' . strtoupper(substr(sha1((string) now()->timestamp . random_int(1000, 9999)), 0, 8));
         $validated['created_by'] = auth()->user()?->id;
 
         // Upload foto ke storage public
@@ -130,7 +155,7 @@ class AdminCatalogController extends Controller
         }
 
         // Pertahankan SKU lama jika input SKU kosong
-        $validated['sku'] = $validated['sku'] ?? ($product->sku ?? 'PRD-'.strtoupper(substr(sha1((string) now()->timestamp.random_int(1000, 9999)), 0, 8)));
+        $validated['sku'] = $validated['sku'] ?? ($product->sku ?? 'PRD-' . strtoupper(substr(sha1((string) now()->timestamp . random_int(1000, 9999)), 0, 8)));
 
         $product->update($validated);
 
@@ -159,7 +184,23 @@ class AdminCatalogController extends Controller
     // Menampilkan daftar produk berdasarkan role
     protected function catalogIndexView(string $role): View
     {
-        $products = Product::query()->latest('updated_at')->latest('id')->get();
+        $search = request()->query('search');
+        $query = Product::query();
+
+        if ($search !== null && $search !== '') {
+            $keyword = strtolower(trim((string) $search));
+
+            $query->where(function ($query) use ($keyword) {
+                $query->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
+                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%'])
+                    ->orWhereRaw('LOWER(status) LIKE ?', ['%' . $keyword . '%']);
+            });
+        }
+
+        $products = $query
+            ->latest('updated_at')
+            ->latest('id')
+            ->get();
 
         return view('catalog.index', [
             'products' => $products,

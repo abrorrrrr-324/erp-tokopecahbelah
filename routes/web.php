@@ -90,7 +90,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/laporan', function () {
         return view('admin.laporan.index');
     })->name('admin.laporan');
-
 });
 
 // ===============================
@@ -105,7 +104,6 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
 
     Route::get('/gudang/katalog', [AdminCatalogController::class, 'gudangIndex'])->name('gudang.katalog');
     Route::get('/gudang/katalog/{product}', [AdminCatalogController::class, 'gudangShow'])->name('gudang.katalog.show');
-
 });
 
 // ===============================
@@ -117,7 +115,6 @@ Route::middleware(['auth', 'role:supplier'])->group(function () {
     Route::get('/supplier/dashboard', function () {
         return view('supplier.dashboard');
     })->name('supplier.dashboard');
-
 });
 
 // ===============================
@@ -136,5 +133,4 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('/costumer/dashboard', function () {
         return view('customer.dashboard');
     })->name('costumer.dashboard');
-
 });

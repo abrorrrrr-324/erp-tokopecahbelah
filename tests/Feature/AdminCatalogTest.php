@@ -135,6 +135,42 @@ class AdminCatalogTest extends TestCase
             ->assertSee('Apakah anda yakin ingin mengubah data produk ini?');
     }
 
+    public function test_admin_can_search_products_by_name_category_or_status(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        Product::create([
+            'name' => 'Kursi Kayu Minimalis',
+            'category' => 'Furniture',
+            'stock' => 12,
+            'price' => 800000,
+            'status' => 'Aktif',
+            'created_by' => $admin->id,
+        ]);
+
+        Product::create([
+            'name' => 'Lemari Kayu Besar',
+            'category' => 'Furniture',
+            'stock' => 9,
+            'price' => 1200000,
+            'status' => 'Hampir habis',
+            'created_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.katalog', ['search' => 'Kursi']))
+            ->assertOk()
+            ->assertSee('Kursi Kayu Minimalis')
+            ->assertDontSee('Lemari Kayu Besar');
+
+        $this->actingAs($admin)
+            ->get(route('admin.katalog', ['search' => 'Hampir habis']))
+            ->assertOk()
+            ->assertSee('Lemari Kayu Besar');
+    }
+
     public function test_admin_can_manage_customer_and_supplier_records(): void
     {
         $admin = User::factory()->create([
