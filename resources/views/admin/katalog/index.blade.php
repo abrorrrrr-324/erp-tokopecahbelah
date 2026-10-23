@@ -221,10 +221,6 @@
                 {{ $products->first() ? 'Apakah anda yakin ingin menghapus produk ' . $products->first()->name . '?' : 'Apakah anda yakin ingin menghapus produk ini?' }}
             </p>
 
-            <p class="mt-2 text-sm text-stone-500">
-                Produk yang dihapus tidak akan ditampilkan lagi dalam katalog.
-            </p>
-
             <div class="mt-6 flex justify-end gap-3">
                 <button type="button" id="cancel-delete"
                     class="rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100">
@@ -233,7 +229,7 @@
 
                 <button type="button" id="confirm-delete"
                     class="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
-                    Ya, Hapus
+                    Iya
                 </button>
             </div>
         </div>
