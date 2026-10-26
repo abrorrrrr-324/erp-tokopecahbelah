@@ -25,9 +25,6 @@
 
             <div class="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
                 <div class="flex items-center gap-3">
-                    <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                        {{ $product->status }}
-                    </span>
                     <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">
                         {{ $product->category }}
                     </span>
@@ -52,7 +49,7 @@
                 <div class="rounded-2xl bg-stone-50 p-4">
                     <p class="text-sm text-stone-500">Deskripsi</p>
                     <p class="mt-2 text-sm leading-6 text-stone-700">
-                        Produk {{ $product->name }} dengan kategori {{ $product->category }} dan status {{ $product->status }}. Stok tersedia saat ini sebanyak {{ $product->stock }} unit, dengan harga jual Rp {{ number_format($product->price, 0, ',', '.') }}.
+                        Produk {{ $product->name }} dengan kategori {{ $product->category }} dan  Stok tersedia saat ini sebanyak {{ $product->stock }} unit, dengan harga jual Rp {{ number_format($product->price, 0, ',', '.') }}.
                     </p>
                 </div>
             </div>

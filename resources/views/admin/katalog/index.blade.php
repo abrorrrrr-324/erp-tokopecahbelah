@@ -18,22 +18,13 @@
         {{-- Tabel Produk --}}
         <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
 
-            {{-- Judul dan Status --}}
+            {{-- Judul --}}
             <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <div>
                     <h2 class="mt-1 text-2xl font-bold text-stone-900">Daftar Produk</h2>
                     <p class="text-sm text-stone-500">Kelola katalog produk toko</p>
                     </div>
-                </div>
-
-                <div class="flex flex-wrap gap-2">
-                    <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                        Aktif
-                    </span>
-                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                        Promo
-                    </span>
                 </div>
             </div>
 
@@ -53,7 +44,7 @@
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
-                        placeholder="Cari nama produk, kategori, atau status..."
+                        placeholder="Cari nama produk, kategori..."
                         class="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100">
                 </div>
 
@@ -93,7 +84,6 @@
                             <th class="pb-3 pr-4 font-semibold">Kategori</th>
                             <th class="pb-3 pr-4 font-semibold">Stok</th>
                             <th class="pb-3 pr-4 font-semibold">Harga</th>
-                            <th class="pb-3 pr-4 font-semibold">Status</th>
                             <th class="pb-3 text-right font-semibold">Aksi</th>
                         </tr>
                     </thead>
@@ -131,12 +121,6 @@
                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                 </td>
 
-                                {{-- Status --}}
-                                <td class="py-3 pr-4">
-                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $statusClasses[$product->status] ?? 'bg-stone-100 text-stone-700' }}">
-                                        {{ $product->status }}
-                                    </span>
-                                </td>
 
                                 {{-- Aksi --}}
                                 <td class="py-3 text-right">

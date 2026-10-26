@@ -30,7 +30,6 @@ class Product extends Model
         'satuan',
         'minimum_stock',
         'stok_minimum',
-        'status',
         'photo',
         'created_by',
     ];

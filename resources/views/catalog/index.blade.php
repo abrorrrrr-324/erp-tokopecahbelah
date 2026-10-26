@@ -6,7 +6,6 @@
 
 @section('content')
     @php
-        $activeProducts = $products->where('status', 'Aktif')->count();
         $lowStock = $products->where('stock', '<=', 10)->count();
         $totalValue = $products->sum('price');
     @endphp
@@ -33,7 +32,7 @@
                     type="text"
                     name="search"
                     value="{{ request('search') }}"
-                    placeholder="Cari nama produk, kategori, atau status..."
+                    placeholder="Cari nama produk, kategori..."
                     class="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100">
             </div>
 
@@ -70,9 +69,6 @@
                                     <p class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">{{ $product->category }}</p>
                                     <h3 class="mt-2 text-lg font-bold text-stone-900">{{ $product->name }}</h3>
                                 </div>
-                                <span class="inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold {{ $product->status === 'Aktif' ? 'bg-amber-100 text-amber-700' : 'bg-stone-200 text-stone-700' }}">
-                                    {{ $product->status }}
-                                </span>
                             </div>
 
                             <div class="flex items-center justify-between text-sm text-stone-600">

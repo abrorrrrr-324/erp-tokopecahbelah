@@ -67,17 +67,6 @@
         @error('description') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
     </div>
 
-    {{-- Status --}}
-    <div class="space-y-2 md:col-span-2">
-        <label for="status" class="text-sm font-medium text-stone-700">Status</label>
-        @php $selectedStatus = old('status', $product->status ?? 'Aktif'); @endphp
-        <select id="status" name="status" class="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-stone-900 outline-none transition focus:border-amber-400 focus:bg-white" required>
-            @foreach (['Aktif', 'Promo', 'Hampir habis', 'Nonaktif'] as $status)
-                <option value="{{ $status }}" @selected($selectedStatus === $status)>{{ $status }}</option>
-            @endforeach
-        </select>
-        @error('status') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-    </div>
 
     {{-- Foto Produk --}}
     <div class="space-y-2 md:col-span-2">

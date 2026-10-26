@@ -24,8 +24,7 @@ class AdminCatalogController extends Controller
 
             $query->where(function ($query) use ($keyword) {
                 $query->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
-                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%'])
-                    ->orWhereRaw('LOWER(status) LIKE ?', ['%' . $keyword . '%']);
+                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%']);
             });
         }
 
@@ -113,7 +112,6 @@ class AdminCatalogController extends Controller
             'description' => ['nullable', 'string'],
             'unit' => ['nullable', 'string', 'max:30'],
             'minimum_stock' => ['nullable', 'integer', 'min:0'],
-            'status' => ['required', 'string', 'max:50'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
@@ -144,7 +142,6 @@ class AdminCatalogController extends Controller
             'description' => ['nullable', 'string'],
             'unit' => ['nullable', 'string', 'max:30'],
             'minimum_stock' => ['nullable', 'integer', 'min:0'],
-            'status' => ['required', 'string', 'max:50'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
@@ -192,8 +189,7 @@ class AdminCatalogController extends Controller
 
             $query->where(function ($query) use ($keyword) {
                 $query->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
-                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%'])
-                    ->orWhereRaw('LOWER(status) LIKE ?', ['%' . $keyword . '%']);
+                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%']);
             });
         }
 

@@ -35,9 +35,6 @@
 
             <div class="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-wrap items-center gap-3">
-                    <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                        {{ $product->status }}
-                    </span>
                     <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">
                         {{ $product->category }}
                     </span>
