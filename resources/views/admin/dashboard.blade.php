@@ -8,7 +8,6 @@
     @php
         $stats = [
             ['title' => 'Total Produk', 'value' => $totalProduk ?? 0],
-            ['title' => 'Stok Tersedia', 'value' => $totalStok ?? 0],
             ['title' => 'Customer', 'value' => $customerCount ?? 0],
             ['title' => 'Supplier', 'value' => $supplierCount ?? 0],
         ];
