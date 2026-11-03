@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\AdminCatalogController;
@@ -102,8 +103,15 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
         return view('kepalagudang.dashboard');
     })->name('gudang.dashboard');
 
-    Route::get('/gudang/katalog', [AdminCatalogController::class, 'gudangIndex'])->name('gudang.katalog');
-    Route::get('/gudang/katalog/{product}', [AdminCatalogController::class, 'gudangShow'])->name('gudang.katalog.show');
+    Route::get('/gudang/katalog', [AdminCatalogController::class, 'gudangIndex'])
+        ->name('gudang.katalog');
+
+    Route::get('/gudang/katalog/{product}', [AdminCatalogController::class, 'gudangShow'])
+        ->name('gudang.katalog.show');
+
+    // CEK STOK
+    Route::get('/gudang/cek-stok', [AdminCatalogController::class, 'cekStok'])
+        ->name('gudang.cek-stok');
 });
 
 // ===============================
@@ -127,8 +135,11 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
         return view('customer.dashboard');
     })->name('customer.dashboard');
 
-    Route::get('/customer/katalog', [AdminCatalogController::class, 'customerIndex'])->name('customer.katalog');
-    Route::get('/customer/katalog/{product}', [AdminCatalogController::class, 'customerShow'])->name('customer.katalog.show');
+    Route::get('/customer/katalog', [AdminCatalogController::class, 'customerIndex'])
+        ->name('customer.katalog');
+
+    Route::get('/customer/katalog/{product}', [AdminCatalogController::class, 'customerShow'])
+        ->name('customer.katalog.show');
 
     Route::get('/costumer/dashboard', function () {
         return view('customer.dashboard');
