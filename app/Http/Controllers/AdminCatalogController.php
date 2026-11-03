@@ -77,6 +77,51 @@ class AdminCatalogController extends Controller
         return $this->catalogDetailView($product, 'kepala_gudang');
     }
 
+    // ==================== CEK STOK KEPALA GUDANG ====================
+
+    // Menampilkan halaman cek stok barang
+    public function cekStok(): View
+    {
+        $search = request()->query('search');
+
+        $query = Product::query();
+
+        // Pencarian nama dan kategori produk
+        if ($search !== null && $search !== '') {
+            $keyword = strtolower(trim((string) $search));
+
+            $query->where(function ($query) use ($keyword) {
+                $query->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
+                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%']);
+            });
+        }
+
+        // Statistik seluruh produk
+        $totalProduk = Product::count();
+        $totalStok = Product::sum('stock');
+
+        $stokHabis = Product::where('stock', '<=', 0)->count();
+
+        $stokMenipis = Product::where('stock', '>', 0)
+            ->whereRaw('stock <= COALESCE(minimum_stock, 10)')
+            ->count();
+
+        // Mengambil data produk
+        $products = $query
+            ->latest('updated_at')
+            ->latest('id')
+            ->get();
+
+        return view('kepalagudang.cek-stok', compact(
+            'products',
+            'totalProduk',
+            'totalStok',
+            'stokHabis',
+            'stokMenipis'
+        ));
+    }
+
+
     // ==================== KATALOG CUSTOMER ====================
 
     // Daftar produk untuk customer

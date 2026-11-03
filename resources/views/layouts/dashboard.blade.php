@@ -23,7 +23,7 @@
         'kepala_gudang' => [
             ['label' => 'Dashboard', 'icon' => '🏠', 'route' => 'gudang.dashboard'],
             ['label' => 'Katalog Barang', 'icon' => '📦', 'route' => 'gudang.katalog'],
-            ['label' => 'Real Stok', 'icon' => '📊', 'route' => null],
+            ['label' => 'Real Stok', 'icon' => '📊', 'route' => 'gudang.cek-stok'],
             ['label' => 'Kelola Stok', 'icon' => '🧮', 'route' => null],
             ['label' => 'Pengecekan', 'icon' => '🔍', 'route' => null],
             ['label' => 'Update Qty', 'icon' => '✏️', 'route' => null],
