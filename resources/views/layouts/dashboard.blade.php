@@ -34,12 +34,8 @@
         ],
         'supplier' => [
             ['label' => 'Dashboard', 'icon' => '🏠', 'route' => 'supplier.dashboard'],
-            ['label' => 'Pesanan', 'icon' => '🧾', 'route' => null],
-            ['label' => 'Detail Pesanan', 'icon' => '📄', 'route' => null],
-            ['label' => 'Konfirmasi', 'icon' => '✅', 'route' => null],
-            ['label' => 'Pengiriman', 'icon' => '🚚', 'route' => null],
-            ['label' => 'Ketersediaan', 'icon' => '📦', 'route' => null],
-            ['label' => 'Status', 'icon' => '📊', 'route' => null],
+            ['label' => 'Pesanan Pembelian', 'icon' => '🧾', 'route' => 'supplier.pesanan'],
+            ['label' => 'Katalog Saya', 'icon' => '📦', 'route' => 'supplier.katalog'],
         ],
         'customer' => [
             ['label' => 'Dashboard', 'icon' => '🏠', 'route' => 'customer.dashboard'],
@@ -162,6 +158,12 @@
 
         setTimeout(hideSuccessNotification, 3000);
     </script>
+@endif
+
+@if (session('error'))
+    <div class="mx-6 mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 lg:mx-8" role="alert">
+        {{ session('error') }}
+    </div>
 @endif
 
 

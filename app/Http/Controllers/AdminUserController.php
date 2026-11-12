@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -31,6 +32,7 @@ class AdminUserController extends Controller
     public function customerShow(User $user): View
     {
         abort_unless($user->role === 'customer', 404);
+
         return view('admin.customer.show', ['customer' => $user]);
     }
 
@@ -38,6 +40,7 @@ class AdminUserController extends Controller
     public function customerEdit(User $user): View
     {
         abort_unless($user->role === 'customer', 404);
+
         return view('admin.customer.edit', ['customer' => $user]);
     }
 
@@ -75,7 +78,7 @@ class AdminUserController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -123,6 +126,7 @@ class AdminUserController extends Controller
     public function supplierShow(User $user): View
     {
         abort_unless($user->role === 'supplier', 404);
+
         return view('admin.supplier.show', ['supplier' => $user]);
     }
 
@@ -130,6 +134,7 @@ class AdminUserController extends Controller
     public function supplierEdit(User $user): View
     {
         abort_unless($user->role === 'supplier', 404);
+
         return view('admin.supplier.edit', ['supplier' => $user]);
     }
 
@@ -142,12 +147,19 @@ class AdminUserController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        User::query()->create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'supplier',
-        ]);
+        DB::transaction(function () use ($validated): void {
+            $user = User::query()->create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'supplier',
+            ]);
+
+            $user->supplierProfile()->create([
+                'nama' => $user->name,
+                'email' => $user->email,
+            ]);
+        });
 
         return redirect()->route('admin.supplier')->with('success', 'Supplier berhasil ditambahkan.');
     }
@@ -159,7 +171,7 @@ class AdminUserController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -172,7 +184,13 @@ class AdminUserController extends Controller
             $user->password = Hash::make($validated['password']);
         }
 
-        $user->save();
+        DB::transaction(function () use ($user): void {
+            $user->save();
+            $user->supplierProfile()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['nama' => $user->name, 'email' => $user->email],
+            );
+        });
 
         return redirect()->route('admin.supplier')->with('success', 'Data supplier berhasil diperbarui.');
     }

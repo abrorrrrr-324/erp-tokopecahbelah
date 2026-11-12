@@ -4,6 +4,8 @@
 use App\Http\Controllers\AdminCatalogController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\SupplierCatalogController;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -80,9 +82,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         return view('admin.transaksi.index');
     })->name('admin.transaksi');
 
-    Route::get('/admin/pembelian', function () {
-        return view('admin.pembelian.index');
-    })->name('admin.pembelian');
+    Route::get('/admin/pembelian', [PurchaseOrderController::class, 'index'])->name('admin.pembelian');
+    Route::get('/admin/pembelian/create', [PurchaseOrderController::class, 'create'])->name('admin.pembelian.create');
+    Route::post('/admin/pembelian', [PurchaseOrderController::class, 'store'])->name('admin.pembelian.store');
+    Route::get('/admin/pembelian/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('admin.pembelian.show');
 
     Route::get('/admin/stok', function () {
         return view('admin.stok.index');
@@ -120,9 +123,14 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
 
 Route::middleware(['auth', 'role:supplier'])->group(function () {
 
-    Route::get('/supplier/dashboard', function () {
-        return view('supplier.dashboard');
-    })->name('supplier.dashboard');
+    Route::get('/supplier/dashboard', [PurchaseOrderController::class, 'supplierDashboard'])->name('supplier.dashboard');
+    Route::get('/supplier/pesanan', [PurchaseOrderController::class, 'supplierIndex'])->name('supplier.pesanan');
+    Route::get('/supplier/katalog', [SupplierCatalogController::class, 'index'])->name('supplier.katalog');
+    Route::get('/supplier/katalog/create', [SupplierCatalogController::class, 'create'])->name('supplier.katalog.create');
+    Route::post('/supplier/katalog', [SupplierCatalogController::class, 'store'])->name('supplier.katalog.store');
+    Route::get('/supplier/katalog/{supplierProduct}/edit', [SupplierCatalogController::class, 'edit'])->name('supplier.katalog.edit');
+    Route::put('/supplier/katalog/{supplierProduct}', [SupplierCatalogController::class, 'update'])->name('supplier.katalog.update');
+    Route::delete('/supplier/katalog/{supplierProduct}', [SupplierCatalogController::class, 'destroy'])->name('supplier.katalog.destroy');
 });
 
 // ===============================
