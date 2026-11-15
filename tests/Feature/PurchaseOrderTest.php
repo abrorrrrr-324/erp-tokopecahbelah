@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Models\SupplierProduct;
 use App\Models\User;
@@ -153,11 +154,11 @@ class PurchaseOrderTest extends TestCase
         $supplier = Supplier::factory()->create();
         $otherSupplier = Supplier::factory()->create();
         $admin = User::factory()->create(['role' => 'admin']);
-        PurchaseOrder::factory()->create([
+        $order = PurchaseOrder::factory()->create([
             'supplier_id' => $supplier->id,
             'user_id' => $admin->id,
         ]);
-        PurchaseOrder::factory()->create([
+        $otherOrder = PurchaseOrder::factory()->create([
             'supplier_id' => $otherSupplier->id,
             'user_id' => $admin->id,
         ]);
@@ -165,14 +166,133 @@ class PurchaseOrderTest extends TestCase
         $this->actingAs($supplier->user)
             ->get(route('supplier.pesanan'))
             ->assertOk()
-            ->assertSee('PO-00001')
-            ->assertDontSee('PO-00002');
+            ->assertSee('PO-'.str_pad((string) $order->id, 5, '0', STR_PAD_LEFT))
+            ->assertDontSee('PO-'.str_pad((string) $otherOrder->id, 5, '0', STR_PAD_LEFT));
 
         $this->actingAs($supplier->user)
             ->get(route('supplier.dashboard'))
             ->assertOk()
             ->assertSee('Total Pesanan')
-            ->assertSee('PO-00001');
+            ->assertSee('PO-'.str_pad((string) $order->id, 5, '0', STR_PAD_LEFT));
+    }
+
+    public function test_supplier_can_view_the_details_of_its_purchase_order(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $product = SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'nama' => 'Gelas Kaca Detail',
+        ]);
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'user_id' => $admin->id,
+            'catatan' => 'Mohon dikirim dengan aman.',
+        ]);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 4,
+            'harga' => 12500,
+            'sub_total' => 50000,
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->get(route('supplier.pesanan.show', $order))
+            ->assertOk()
+            ->assertSee('PO-'.str_pad((string) $order->id, 5, '0', STR_PAD_LEFT))
+            ->assertSee('Gelas Kaca Detail')
+            ->assertSee('Mohon dikirim dengan aman.')
+            ->assertSee('Konfirmasi pesanan');
+    }
+
+    public function test_supplier_can_confirm_its_waiting_purchase_order(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'user_id' => $admin->id,
+            'status' => 'menunggu',
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.confirm', $order))
+            ->assertRedirect(route('supplier.pesanan.show', $order))
+            ->assertSessionHas('success', 'Pesanan pembelian berhasil dikonfirmasi.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'dikonfirmasi',
+        ]);
+    }
+
+    public function test_supplier_cannot_view_another_suppliers_purchase_order(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $otherSupplier = Supplier::factory()->create();
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $otherSupplier->id,
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->get(route('supplier.pesanan.show', $order))
+            ->assertNotFound();
+    }
+
+    public function test_supplier_cannot_confirm_another_suppliers_purchase_order(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $otherSupplier = Supplier::factory()->create();
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $otherSupplier->id,
+            'status' => 'menunggu',
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.confirm', $order))
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'menunggu',
+        ]);
+    }
+
+    public function test_supplier_cannot_confirm_a_purchase_order_that_is_not_waiting(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'user_id' => $admin->id,
+            'status' => 'dikonfirmasi',
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.confirm', $order))
+            ->assertRedirect(route('supplier.pesanan.show', $order))
+            ->assertSessionHas('error', 'Pesanan hanya dapat dikonfirmasi saat status menunggu.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'dikonfirmasi',
+        ]);
+    }
+
+    public function test_customer_cannot_confirm_a_supplier_purchase_order(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $order = PurchaseOrder::factory()->create();
+
+        $this->actingAs($customer)
+            ->post(route('supplier.pesanan.confirm', $order))
+            ->assertRedirect(route('login'));
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'menunggu',
+        ]);
     }
 
     public function test_customer_cannot_create_a_purchase_order(): void

@@ -36,7 +36,7 @@
 
             <div class="space-y-3">
                 @forelse ($orders as $order)
-                    <a href="{{ route('supplier.pesanan') }}" class="flex flex-col gap-3 rounded-2xl bg-stone-50 p-4 transition hover:bg-stone-100 sm:flex-row sm:items-center sm:justify-between">
+                    <a href="{{ route('supplier.pesanan.show', $order) }}" class="flex flex-col gap-3 rounded-2xl bg-stone-50 p-4 transition hover:bg-stone-100 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <p class="font-semibold text-stone-900">PO-{{ str_pad((string) $order->id, 5, '0', STR_PAD_LEFT) }}</p>
                             <p class="text-sm text-stone-500">{{ $order->tanggal_pesanan?->translatedFormat('d M Y') }} · {{ $order->items->count() }} item</p>

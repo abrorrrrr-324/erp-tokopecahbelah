@@ -125,6 +125,8 @@ Route::middleware(['auth', 'role:supplier'])->group(function () {
 
     Route::get('/supplier/dashboard', [PurchaseOrderController::class, 'supplierDashboard'])->name('supplier.dashboard');
     Route::get('/supplier/pesanan', [PurchaseOrderController::class, 'supplierIndex'])->name('supplier.pesanan');
+    Route::get('/supplier/pesanan/{purchaseOrder}', [PurchaseOrderController::class, 'supplierShow'])->name('supplier.pesanan.show');
+    Route::post('/supplier/pesanan/{purchaseOrder}/konfirmasi', [PurchaseOrderController::class, 'supplierConfirm'])->name('supplier.pesanan.confirm');
     Route::get('/supplier/katalog', [SupplierCatalogController::class, 'index'])->name('supplier.katalog');
     Route::get('/supplier/katalog/create', [SupplierCatalogController::class, 'create'])->name('supplier.katalog.create');
     Route::post('/supplier/katalog', [SupplierCatalogController::class, 'store'])->name('supplier.katalog.store');

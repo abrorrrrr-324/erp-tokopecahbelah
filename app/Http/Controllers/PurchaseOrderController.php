@@ -194,6 +194,44 @@ class PurchaseOrderController extends Controller
         return view('supplier.pesanan.index', compact('orders'));
     }
 
+    public function supplierShow(Request $request, PurchaseOrder $purchaseOrder): View
+    {
+        $supplier = $this->supplierFor($request->user());
+        $order = $supplier->purchaseOrders()
+            ->with(['user', 'items.product'])
+            ->findOrFail($purchaseOrder->id);
+
+        return view('supplier.pesanan.show', compact('order'));
+    }
+
+    public function supplierConfirm(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
+    {
+        $supplier = $this->supplierFor($request->user());
+        $confirmed = DB::transaction(function () use ($supplier, $purchaseOrder): bool {
+            $order = $supplier->purchaseOrders()
+                ->lockForUpdate()
+                ->findOrFail($purchaseOrder->id);
+
+            if ($order->status !== 'menunggu') {
+                return false;
+            }
+
+            $order->update(['status' => 'dikonfirmasi']);
+
+            return true;
+        });
+
+        if (! $confirmed) {
+            return redirect()
+                ->route('supplier.pesanan.show', $purchaseOrder)
+                ->with('error', 'Pesanan hanya dapat dikonfirmasi saat status menunggu.');
+        }
+
+        return redirect()
+            ->route('supplier.pesanan.show', $purchaseOrder)
+            ->with('success', 'Pesanan pembelian berhasil dikonfirmasi.');
+    }
+
     private function supplierFor(User $user): Supplier
     {
         return Supplier::query()->firstOrCreate(

@@ -35,7 +35,12 @@
                 @if ($order->catatan)
                     <p class="mt-4 rounded-xl bg-stone-50 p-3 text-sm text-stone-600"><span class="font-semibold">Catatan admin:</span> {{ $order->catatan }}</p>
                 @endif
-                <p class="mt-4 border-t border-stone-100 pt-4 text-right text-lg font-black text-stone-900">Total Rp {{ number_format((float) $order->total, 0, ',', '.') }}</p>
+                <div class="mt-4 flex flex-col gap-3 border-t border-stone-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <a href="{{ route('supplier.pesanan.show', $order) }}" class="w-fit rounded-xl border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50">
+                        Lihat detail pesanan
+                    </a>
+                    <p class="text-lg font-black text-stone-900">Total Rp {{ number_format((float) $order->total, 0, ',', '.') }}</p>
+                </div>
             </article>
         @empty
             <div class="rounded-3xl border border-dashed border-stone-300 bg-white p-10 text-center text-stone-500">
