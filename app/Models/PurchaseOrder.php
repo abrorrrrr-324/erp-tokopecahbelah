@@ -19,6 +19,8 @@ class PurchaseOrder extends Model
         'tanggal_pesanan',
         'total',
         'status',
+        'metode_pembayaran',
+        'status_pembayaran',
         'catatan',
     ];
 

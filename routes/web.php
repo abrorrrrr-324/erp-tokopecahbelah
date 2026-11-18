@@ -86,6 +86,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/pembelian/create', [PurchaseOrderController::class, 'create'])->name('admin.pembelian.create');
     Route::post('/admin/pembelian', [PurchaseOrderController::class, 'store'])->name('admin.pembelian.store');
     Route::get('/admin/pembelian/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('admin.pembelian.show');
+    Route::post('/admin/pembelian/{purchaseOrder}/checkout', [PurchaseOrderController::class, 'checkout'])->name('admin.pembelian.checkout');
+    Route::post('/admin/pembelian/{purchaseOrder}/bayar-qris', [PurchaseOrderController::class, 'payWithQris'])->name('admin.pembelian.qris.pay');
 
     Route::get('/admin/stok', function () {
         return view('admin.stok.index');

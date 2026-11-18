@@ -152,7 +152,7 @@ class PurchaseOrderController extends Controller
 
         return redirect()
             ->route('admin.pembelian.show', $order)
-            ->with('success', 'Pesanan pembelian berhasil dibuat.');
+            ->with('success', 'Pesanan pembelian berhasil dibuat. Silakan pilih metode pembayaran.');
     }
 
     public function show(PurchaseOrder $purchaseOrder): View
@@ -160,6 +160,74 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->load(['supplier.user', 'user', 'items.product.category']);
 
         return view('admin.pembelian.show', ['order' => $purchaseOrder]);
+    }
+
+    public function checkout(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
+    {
+        $validated = $request->validate([
+            'payment_method' => ['required', Rule::in(['cash', 'qris'])],
+        ]);
+
+        $checkedOut = DB::transaction(function () use ($purchaseOrder, $validated): bool {
+            $order = PurchaseOrder::query()
+                ->lockForUpdate()
+                ->findOrFail($purchaseOrder->id);
+
+            if ($order->status_pembayaran !== 'belum_dibayar') {
+                return false;
+            }
+
+            $isCashPayment = $validated['payment_method'] === 'cash';
+            $order->update([
+                'metode_pembayaran' => $validated['payment_method'],
+                'status_pembayaran' => $isCashPayment ? 'lunas' : 'menunggu',
+            ]);
+
+            return true;
+        });
+
+        if (! $checkedOut) {
+            return redirect()
+                ->route('admin.pembelian.show', $purchaseOrder)
+                ->with('error', 'Metode pembayaran pesanan ini sudah dipilih atau pesanan sudah dibayar.');
+        }
+
+        if ($validated['payment_method'] === 'qris') {
+            return redirect()
+                ->route('admin.pembelian.show', $purchaseOrder)
+                ->with('success', 'QRIS simulasi siap. Lanjutkan pembayaran untuk menyelesaikan checkout.');
+        }
+
+        return redirect()
+            ->route('admin.pembelian.show', $purchaseOrder)
+            ->with('success', 'Checkout berhasil dengan pembayaran cash.');
+    }
+
+    public function payWithQris(PurchaseOrder $purchaseOrder): RedirectResponse
+    {
+        $paid = DB::transaction(function () use ($purchaseOrder): bool {
+            $order = PurchaseOrder::query()
+                ->lockForUpdate()
+                ->findOrFail($purchaseOrder->id);
+
+            if ($order->metode_pembayaran !== 'qris' || $order->status_pembayaran !== 'menunggu') {
+                return false;
+            }
+
+            $order->update(['status_pembayaran' => 'lunas']);
+
+            return true;
+        });
+
+        if (! $paid) {
+            return redirect()
+                ->route('admin.pembelian.show', $purchaseOrder)
+                ->with('error', 'Pembayaran QRIS belum dipilih atau pesanan sudah diproses.');
+        }
+
+        return redirect()
+            ->route('admin.pembelian.show', $purchaseOrder)
+            ->with('success', 'Checkout berhasil. Pembayaran QRIS simulasi berhasil dikonfirmasi.');
     }
 
     public function supplierDashboard(Request $request): View

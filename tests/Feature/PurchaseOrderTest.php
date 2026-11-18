@@ -33,7 +33,7 @@ class PurchaseOrderTest extends TestCase
                 ],
             ])
             ->assertRedirect(route('admin.pembelian.show', 1))
-            ->assertSessionHas('success', 'Pesanan pembelian berhasil dibuat.');
+            ->assertSessionHas('success', 'Pesanan pembelian berhasil dibuat. Silakan pilih metode pembayaran.');
 
         $order = PurchaseOrder::query()->with('items')->firstOrFail();
         $this->assertDatabaseHas('pesanan_pembelian', [
@@ -62,7 +62,135 @@ class PurchaseOrderTest extends TestCase
             ->get(route('admin.pembelian.show', $order))
             ->assertOk()
             ->assertSee('Gelas Kaca Milik')
-            ->assertSee('PO-00001');
+            ->assertSee('PO-00001')
+            ->assertSee('Pilih metode pembayaran')
+            ->assertSee('Cash')
+            ->assertSee('QRIS')
+            ->assertSee('Checkout');
+    }
+
+    public function test_admin_can_complete_checkout_with_cash(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = PurchaseOrder::factory()->create([
+            'user_id' => $admin->id,
+            'total' => 37500,
+        ]);
+
+        $this->actingAs($admin)
+            ->followingRedirects()
+            ->post(route('admin.pembelian.checkout', $order), [
+                'payment_method' => 'cash',
+            ])
+            ->assertOk()
+            ->assertSee('Checkout berhasil dengan pembayaran cash.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'menunggu',
+            'metode_pembayaran' => 'cash',
+            'status_pembayaran' => 'lunas',
+        ]);
+    }
+
+    public function test_admin_can_complete_checkout_with_simulated_qris(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = PurchaseOrder::factory()->create([
+            'user_id' => $admin->id,
+            'total' => 37500,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pembelian.checkout', $order), [
+                'payment_method' => 'qris',
+            ])
+            ->assertRedirect(route('admin.pembelian.show', $order))
+            ->assertSessionHas('success', 'QRIS simulasi siap. Lanjutkan pembayaran untuk menyelesaikan checkout.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'metode_pembayaran' => 'qris',
+            'status_pembayaran' => 'menunggu',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.pembelian.show', $order))
+            ->assertOk()
+            ->assertSee('QRIS simulasi')
+            ->assertSee('Rp 37.500,00')
+            ->assertSee('tidak dapat dipindai atau digunakan untuk transaksi sungguhan')
+            ->assertSee('Bayar');
+
+        $this->actingAs($admin)
+            ->followingRedirects()
+            ->post(route('admin.pembelian.qris.pay', $order))
+            ->assertOk()
+            ->assertSee('Checkout berhasil. Pembayaran QRIS simulasi berhasil dikonfirmasi.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'metode_pembayaran' => 'qris',
+            'status_pembayaran' => 'lunas',
+        ]);
+    }
+
+    public function test_admin_cannot_complete_qris_payment_before_selecting_qris(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = PurchaseOrder::factory()->create([
+            'user_id' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pembelian.qris.pay', $order))
+            ->assertRedirect(route('admin.pembelian.show', $order))
+            ->assertSessionHas('error', 'Pembayaran QRIS belum dipilih atau pesanan sudah diproses.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status_pembayaran' => 'belum_dibayar',
+        ]);
+    }
+
+    public function test_admin_cannot_change_a_payment_method_after_checkout_starts(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = PurchaseOrder::factory()->create([
+            'user_id' => $admin->id,
+            'metode_pembayaran' => 'qris',
+            'status_pembayaran' => 'menunggu',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pembelian.checkout', $order), [
+                'payment_method' => 'cash',
+            ])
+            ->assertRedirect(route('admin.pembelian.show', $order))
+            ->assertSessionHas('error', 'Metode pembayaran pesanan ini sudah dipilih atau pesanan sudah dibayar.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'metode_pembayaran' => 'qris',
+            'status_pembayaran' => 'menunggu',
+        ]);
+    }
+
+    public function test_supplier_cannot_checkout_an_admin_purchase_order(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $order = PurchaseOrder::factory()->create();
+
+        $this->actingAs($supplier->user)
+            ->post(route('admin.pembelian.checkout', $order), [
+                'payment_method' => 'cash',
+            ])
+            ->assertRedirect(route('login'));
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status_pembayaran' => 'belum_dibayar',
+        ]);
     }
 
     public function test_admin_can_render_a_purchase_order_form_with_supplier_catalog_products(): void

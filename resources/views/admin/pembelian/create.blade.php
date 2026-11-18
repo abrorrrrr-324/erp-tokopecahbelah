@@ -92,7 +92,7 @@
 
             <div class="flex flex-col-reverse justify-end gap-3 sm:flex-row">
                 <a href="{{ route('admin.pembelian') }}" class="rounded-xl border border-stone-200 px-5 py-2.5 text-center text-sm font-semibold text-stone-700 hover:bg-stone-50">Batal</a>
-                <button type="submit" @disabled($suppliers->isEmpty() || $products->isEmpty()) class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50">Simpan Pesanan</button>
+                <button type="submit" @disabled($suppliers->isEmpty() || $products->isEmpty()) class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-stone-900 hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50">Lanjut</button>
             </div>
         </form>
 
