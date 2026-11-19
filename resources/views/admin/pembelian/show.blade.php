@@ -11,7 +11,6 @@
                 <p class="text-sm text-stone-500">Kode pesanan</p>
                 <h2 class="mt-1 text-2xl font-black text-stone-900">PO-{{ str_pad((string) $order->id, 5, '0', STR_PAD_LEFT) }}</h2>
             </div>
-            <a href="{{ route('admin.pembelian') }}" class="rounded-xl border border-stone-200 px-4 py-2.5 text-center text-sm font-semibold text-stone-700 hover:bg-stone-50">Kembali ke daftar</a>
         </section>
 
         <section class="grid gap-4 sm:grid-cols-2">
