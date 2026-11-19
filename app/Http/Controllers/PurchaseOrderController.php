@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Models\SupplierProduct;
 use App\Models\User;
@@ -266,10 +267,11 @@ class PurchaseOrderController extends Controller
     {
         $supplier = $this->supplierFor($request->user());
         $order = $supplier->purchaseOrders()
-            ->with(['user', 'items.product'])
+            ->with(['user', 'items.product:id,nama,sku,satuan,stok'])
             ->findOrFail($purchaseOrder->id);
+        $hasUnavailableProducts = $this->hasUnavailableProducts($order);
 
-        return view('supplier.pesanan.show', compact('order'));
+        return view('supplier.pesanan.show', compact('order', 'hasUnavailableProducts'));
     }
 
     public function supplierConfirm(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
@@ -277,10 +279,11 @@ class PurchaseOrderController extends Controller
         $supplier = $this->supplierFor($request->user());
         $confirmed = DB::transaction(function () use ($supplier, $purchaseOrder): bool {
             $order = $supplier->purchaseOrders()
+                ->with('items.product:id,stok')
                 ->lockForUpdate()
                 ->findOrFail($purchaseOrder->id);
 
-            if ($order->status !== 'menunggu') {
+            if ($order->status !== 'menunggu' || $this->hasUnavailableProducts($order)) {
                 return false;
             }
 
@@ -292,12 +295,48 @@ class PurchaseOrderController extends Controller
         if (! $confirmed) {
             return redirect()
                 ->route('supplier.pesanan.show', $purchaseOrder)
-                ->with('error', 'Pesanan hanya dapat dikonfirmasi saat status menunggu.');
+                ->with('error', 'Pesanan hanya dapat dikonfirmasi saat status menunggu dan semua produk tersedia.');
         }
 
         return redirect()
             ->route('supplier.pesanan.show', $purchaseOrder)
             ->with('success', 'Pesanan pembelian berhasil dikonfirmasi.');
+    }
+
+    public function supplierReject(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
+    {
+        $supplier = $this->supplierFor($request->user());
+        $rejected = DB::transaction(function () use ($supplier, $purchaseOrder): bool {
+            $order = $supplier->purchaseOrders()
+                ->with('items.product:id,stok')
+                ->lockForUpdate()
+                ->findOrFail($purchaseOrder->id);
+
+            if ($order->status !== 'menunggu' || ! $this->hasUnavailableProducts($order)) {
+                return false;
+            }
+
+            $order->update(['status' => 'ditolak']);
+
+            return true;
+        });
+
+        if (! $rejected) {
+            return redirect()
+                ->route('supplier.pesanan.show', $purchaseOrder)
+                ->with('error', 'Pesanan hanya dapat ditolak saat menunggu dan terdapat produk yang tidak tersedia.');
+        }
+
+        return redirect()
+            ->route('supplier.pesanan.show', $purchaseOrder)
+            ->with('success', 'Pesanan pembelian berhasil ditolak karena ada produk yang tidak tersedia.');
+    }
+
+    private function hasUnavailableProducts(PurchaseOrder $order): bool
+    {
+        return $order->items->contains(
+            fn (PurchaseOrderItem $item): bool => (int) ($item->product?->stok ?? 0) <= 0,
+        );
     }
 
     private function supplierFor(User $user): Supplier

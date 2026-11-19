@@ -24,7 +24,7 @@
             </div>
             <div class="rounded-2xl border border-stone-200 bg-white p-5">
                 <p class="text-sm text-stone-500">Status</p>
-                <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $order->status === 'menunggu' ? 'bg-amber-100 text-amber-700' : ($order->status === 'dikonfirmasi' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-700') }}">
+                <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $order->status === 'menunggu' ? 'bg-amber-100 text-amber-700' : ($order->status === 'dikonfirmasi' ? 'bg-emerald-100 text-emerald-700' : ($order->status === 'ditolak' ? 'bg-red-100 text-red-700' : 'bg-stone-100 text-stone-700')) }}">
                     {{ ucfirst($order->status) }}
                 </span>
             </div>
@@ -38,6 +38,7 @@
                         <tr class="border-b border-stone-200 text-stone-500">
                             <th class="pb-3 font-semibold">Produk</th>
                             <th class="pb-3 font-semibold">Jumlah</th>
+                            <th class="pb-3 font-semibold">Ketersediaan stok</th>
                             <th class="pb-3 font-semibold">Harga</th>
                             <th class="pb-3 text-right font-semibold">Subtotal</th>
                         </tr>
@@ -50,6 +51,16 @@
                                     <p class="text-xs text-stone-500">{{ $item->product?->sku ?? '-' }}</p>
                                 </td>
                                 <td class="py-3 pr-4">{{ $item->jumlah }} {{ $item->product?->satuan }}</td>
+                                <td class="py-3 pr-4">
+                                    @if ((int) ($item->product?->stok ?? 0) > 0)
+                                        <span class="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Tersedia</span>
+                                    @else
+                                        <span class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">Tidak tersedia</span>
+                                    @endif
+                                    <p class="mt-1 text-xs text-stone-500">
+                                        {{ number_format((int) ($item->product?->stok ?? 0), 0, ',', '.') }} {{ $item->product?->satuan }}
+                                    </p>
+                                </td>
                                 <td class="py-3 pr-4">Rp {{ number_format((float) $item->harga, 0, ',', '.') }}</td>
                                 <td class="py-3 text-right font-semibold text-stone-900">Rp {{ number_format((float) $item->sub_total, 0, ',', '.') }}</td>
                             </tr>
@@ -57,7 +68,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="3" class="pt-4 text-right font-bold text-stone-900">Total</td>
+                            <td colspan="4" class="pt-4 text-right font-bold text-stone-900">Total</td>
                             <td class="pt-4 text-right text-lg font-black text-stone-900">Rp {{ number_format((float) $order->total, 0, ',', '.') }}</td>
                         </tr>
                     </tfoot>
@@ -74,15 +85,26 @@
         @if ($order->status === 'menunggu')
             <section class="flex flex-col gap-3 rounded-3xl border border-amber-200 bg-amber-50 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h3 class="font-bold text-stone-900">Konfirmasi pesanan</h3>
-                    <p class="text-sm text-stone-600">Pastikan rincian pesanan sudah sesuai sebelum mengonfirmasi.</p>
+                    <h3 class="font-bold text-stone-900">{{ $hasUnavailableProducts ? 'Produk tidak tersedia' : 'Konfirmasi pesanan' }}</h3>
+                    <p class="text-sm text-stone-600">
+                        {{ $hasUnavailableProducts ? 'Tolak pesanan ini karena ada produk yang stoknya kosong.' : 'Pastikan rincian pesanan sudah sesuai sebelum mengonfirmasi.' }}
+                    </p>
                 </div>
-                <form action="{{ route('supplier.pesanan.confirm', $order) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="w-full rounded-xl bg-amber-500 px-5 py-3 text-sm font-bold text-stone-900 transition hover:bg-amber-400 sm:w-auto">
-                        Konfirmasi pesanan
-                    </button>
-                </form>
+                @if ($hasUnavailableProducts)
+                    <form action="{{ route('supplier.pesanan.reject', $order) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-500 sm:w-auto">
+                            Tolak pesanan
+                        </button>
+                    </form>
+                @else
+                    <form action="{{ route('supplier.pesanan.confirm', $order) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full rounded-xl bg-amber-500 px-5 py-3 text-sm font-bold text-stone-900 transition hover:bg-amber-400 sm:w-auto">
+                            Konfirmasi pesanan
+                        </button>
+                    </form>
+                @endif
             </section>
         @endif
     </div>

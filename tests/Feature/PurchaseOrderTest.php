@@ -311,6 +311,7 @@ class PurchaseOrderTest extends TestCase
         $product = SupplierProduct::factory()->create([
             'supplier_id' => $supplier->id,
             'nama' => 'Gelas Kaca Detail',
+            'stok' => 12,
         ]);
         $order = PurchaseOrder::factory()->create([
             'supplier_id' => $supplier->id,
@@ -330,8 +331,139 @@ class PurchaseOrderTest extends TestCase
             ->assertOk()
             ->assertSee('PO-'.str_pad((string) $order->id, 5, '0', STR_PAD_LEFT))
             ->assertSee('Gelas Kaca Detail')
+            ->assertSee('Ketersediaan stok')
+            ->assertSee('Tersedia')
+            ->assertSee('12 pcs')
             ->assertSee('Mohon dikirim dengan aman.')
             ->assertSee('Konfirmasi pesanan');
+    }
+
+    public function test_supplier_can_reject_a_waiting_order_with_an_unavailable_product(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $product = SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'nama' => 'Mangkuk Stok Kosong',
+            'stok' => 0,
+        ]);
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'status' => 'menunggu',
+        ]);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 2,
+            'harga' => 10000,
+            'sub_total' => 20000,
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->get(route('supplier.pesanan.show', $order))
+            ->assertOk()
+            ->assertSee('Tidak tersedia')
+            ->assertSee('Tolak pesanan')
+            ->assertDontSee('Konfirmasi pesanan');
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.reject', $order))
+            ->assertRedirect(route('supplier.pesanan.show', $order))
+            ->assertSessionHas('success', 'Pesanan pembelian berhasil ditolak karena ada produk yang tidak tersedia.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'ditolak',
+        ]);
+    }
+
+    public function test_supplier_cannot_reject_a_waiting_order_when_all_products_are_available(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $product = SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'stok' => 5,
+        ]);
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'status' => 'menunggu',
+        ]);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 2,
+            'harga' => 10000,
+            'sub_total' => 20000,
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.reject', $order))
+            ->assertRedirect(route('supplier.pesanan.show', $order))
+            ->assertSessionHas('error', 'Pesanan hanya dapat ditolak saat menunggu dan terdapat produk yang tidak tersedia.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'menunggu',
+        ]);
+    }
+
+    public function test_supplier_cannot_reject_another_suppliers_purchase_order(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $otherSupplier = Supplier::factory()->create();
+        $product = SupplierProduct::factory()->create([
+            'supplier_id' => $otherSupplier->id,
+            'stok' => 0,
+        ]);
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $otherSupplier->id,
+            'status' => 'menunggu',
+        ]);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 2,
+            'harga' => 10000,
+            'sub_total' => 20000,
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.reject', $order))
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'menunggu',
+        ]);
+    }
+
+    public function test_supplier_cannot_confirm_a_waiting_order_with_an_unavailable_product(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $product = SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'stok' => 0,
+        ]);
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'status' => 'menunggu',
+        ]);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 2,
+            'harga' => 10000,
+            'sub_total' => 20000,
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.confirm', $order))
+            ->assertRedirect(route('supplier.pesanan.show', $order))
+            ->assertSessionHas('error', 'Pesanan hanya dapat dikonfirmasi saat status menunggu dan semua produk tersedia.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'menunggu',
+        ]);
     }
 
     public function test_supplier_can_confirm_its_waiting_purchase_order(): void
@@ -400,7 +532,7 @@ class PurchaseOrderTest extends TestCase
         $this->actingAs($supplier->user)
             ->post(route('supplier.pesanan.confirm', $order))
             ->assertRedirect(route('supplier.pesanan.show', $order))
-            ->assertSessionHas('error', 'Pesanan hanya dapat dikonfirmasi saat status menunggu.');
+            ->assertSessionHas('error', 'Pesanan hanya dapat dikonfirmasi saat status menunggu dan semua produk tersedia.');
 
         $this->assertDatabaseHas('pesanan_pembelian', [
             'id' => $order->id,
