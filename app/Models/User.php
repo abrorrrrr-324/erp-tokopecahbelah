@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -35,5 +36,10 @@ class User extends Authenticatable
     public function supplierProfile(): HasOne
     {
         return $this->hasOne(Supplier::class, 'user_id');
+    }
+
+    public function penerimaanBarang(): HasMany
+    {
+        return $this->hasMany(PenerimaanBarang::class, 'user_id');
     }
 }
