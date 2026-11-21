@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\SupplierCatalogController;
+use App\Http\Controllers\PenerimaanBarangController;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -39,10 +40,20 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
-        $productTable = Schema::hasTable('products') ? 'products' : (Schema::hasTable('produk') ? 'produk' : null);
-        $totalProduk = $productTable ? Product::query()->from($productTable)->count() : 0;
+        $productTable = Schema::hasTable('products')
+            ? 'products'
+            : (Schema::hasTable('produk') ? 'produk' : null);
+
+        $totalProduk = $productTable
+            ? Product::query()->from($productTable)->count()
+            : 0;
+
         $stockColumn = $productTable === 'produk' ? 'stok' : 'stock';
-        $totalStok = $productTable ? (int) Product::query()->from($productTable)->sum($stockColumn) : 0;
+
+        $totalStok = $productTable
+            ? (int) Product::query()->from($productTable)->sum($stockColumn)
+            : 0;
+
         $customerCount = User::query()->where('role', 'customer')->count();
         $supplierCount = User::query()->where('role', 'supplier')->count();
 
@@ -117,6 +128,16 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
     // CEK STOK
     Route::get('/gudang/cek-stok', [AdminCatalogController::class, 'cekStok'])
         ->name('gudang.cek-stok');
+
+    // PENERIMAAN BARANG
+    Route::get('/gudang/penerimaan', [PenerimaanBarangController::class, 'index'])
+        ->name('gudang.penerimaan');
+
+    Route::get('/gudang/penerimaan/{purchaseOrder}', [PenerimaanBarangController::class, 'show'])
+        ->name('gudang.penerimaan.show');
+
+    Route::post('/gudang/penerimaan/{purchaseOrder}/verifikasi', [PenerimaanBarangController::class, 'verifikasi'])
+        ->name('gudang.penerimaan.verifikasi');
 });
 
 // ===============================
@@ -130,6 +151,11 @@ Route::middleware(['auth', 'role:supplier'])->group(function () {
     Route::get('/supplier/pesanan/{purchaseOrder}', [PurchaseOrderController::class, 'supplierShow'])->name('supplier.pesanan.show');
     Route::post('/supplier/pesanan/{purchaseOrder}/konfirmasi', [PurchaseOrderController::class, 'supplierConfirm'])->name('supplier.pesanan.confirm');
     Route::post('/supplier/pesanan/{purchaseOrder}/tolak', [PurchaseOrderController::class, 'supplierReject'])->name('supplier.pesanan.reject');
+
+    // KIRIM BARANG
+    Route::post('/supplier/pesanan/{purchaseOrder}/kirim', [PurchaseOrderController::class, 'supplierShip'])
+        ->name('supplier.pesanan.ship');
+
     Route::get('/supplier/katalog', [SupplierCatalogController::class, 'index'])->name('supplier.katalog');
     Route::get('/supplier/katalog/create', [SupplierCatalogController::class, 'create'])->name('supplier.katalog.create');
     Route::post('/supplier/katalog', [SupplierCatalogController::class, 'store'])->name('supplier.katalog.store');

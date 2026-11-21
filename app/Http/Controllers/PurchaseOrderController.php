@@ -331,7 +331,36 @@ class PurchaseOrderController extends Controller
             ->route('supplier.pesanan.show', $purchaseOrder)
             ->with('success', 'Pesanan pembelian berhasil ditolak karena ada produk yang tidak tersedia.');
     }
+    public function supplierShip(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
+{
+    $supplier = $this->supplierFor($request->user());
 
+    $shipped = DB::transaction(function () use ($supplier, $purchaseOrder): bool {
+        $order = $supplier->purchaseOrders()
+            ->lockForUpdate()
+            ->findOrFail($purchaseOrder->id);
+
+        if ($order->status !== 'dikonfirmasi') {
+            return false;
+        }
+
+        $order->update([
+            'status' => 'dikirim',
+        ]);
+
+        return true;
+    });
+
+    if (! $shipped) {
+        return redirect()
+            ->route('supplier.pesanan.show', $purchaseOrder)
+            ->with('error', 'Pesanan hanya dapat dikirim setelah dikonfirmasi.');
+    }
+
+    return redirect()
+        ->route('supplier.pesanan.show', $purchaseOrder)
+        ->with('success', 'Pesanan berhasil ditandai sebagai barang dikirim.');
+}
     private function hasUnavailableProducts(PurchaseOrder $order): bool
     {
         return $order->items->contains(
