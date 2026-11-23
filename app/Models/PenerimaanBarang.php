@@ -16,12 +16,17 @@ class PenerimaanBarang extends Model
         'tanggal_penerimaan',
         'status',
         'catatan',
+        'foto_bukti',
+        'tindak_lanjut',
+        'reviewed_by',
+        'reviewed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'tanggal_penerimaan' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -36,6 +41,11 @@ class PenerimaanBarang extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function reviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function details(): HasMany

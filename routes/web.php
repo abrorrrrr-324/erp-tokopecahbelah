@@ -4,9 +4,13 @@
 use App\Http\Controllers\AdminCatalogController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PurchaseOrderController;
-use App\Http\Controllers\SupplierCatalogController;
 use App\Http\Controllers\PenerimaanBarangController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\StockAuditController;
+use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\SupplierCatalogController;
+use App\Http\Controllers\WarehouseDashboardController;
+use App\Http\Controllers\WarehouseReportController;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -115,9 +119,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
 
-    Route::get('/gudang/dashboard', function () {
-        return view('kepalagudang.dashboard');
-    })->name('gudang.dashboard');
+    Route::get('/gudang/dashboard', [WarehouseDashboardController::class, 'index'])
+        ->name('gudang.dashboard');
 
     Route::get('/gudang/katalog', [AdminCatalogController::class, 'gudangIndex'])
         ->name('gudang.katalog');
@@ -129,15 +132,48 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
     Route::get('/gudang/cek-stok', [AdminCatalogController::class, 'cekStok'])
         ->name('gudang.cek-stok');
 
+    Route::get('/gudang/stok/mutasi', [StockMovementController::class, 'index'])
+        ->name('gudang.stok.mutasi');
+    Route::get('/gudang/stok/mutasi/create', [StockMovementController::class, 'create'])
+        ->name('gudang.stok.mutasi.create');
+    Route::post('/gudang/stok/mutasi', [StockMovementController::class, 'store'])
+        ->name('gudang.stok.mutasi.store');
+
+    Route::get('/gudang/audit', [StockAuditController::class, 'index'])
+        ->name('gudang.audit');
+    Route::get('/gudang/audit/create', [StockAuditController::class, 'create'])
+        ->name('gudang.audit.create');
+    Route::post('/gudang/audit', [StockAuditController::class, 'store'])
+        ->name('gudang.audit.store');
+    Route::get('/gudang/audit/{stockAudit}', [StockAuditController::class, 'show'])
+        ->name('gudang.audit.show');
+    Route::get('/gudang/audit/{stockAudit}/foto', [StockAuditController::class, 'foto'])
+        ->name('gudang.audit.foto');
+    Route::post('/gudang/audit/{stockAudit}/verifikasi', [StockAuditController::class, 'review'])
+        ->name('gudang.audit.review');
+
+    Route::get('/gudang/laporan', [WarehouseReportController::class, 'index'])
+        ->name('gudang.laporan');
+    Route::get('/gudang/laporan/cetak', [WarehouseReportController::class, 'print'])
+        ->name('gudang.laporan.print');
+    Route::get('/gudang/laporan/pdf', [WarehouseReportController::class, 'pdf'])
+        ->name('gudang.laporan.pdf');
+    Route::get('/gudang/laporan/excel', [WarehouseReportController::class, 'excel'])
+        ->name('gudang.laporan.excel');
+
     // PENERIMAAN BARANG
     Route::get('/gudang/penerimaan', [PenerimaanBarangController::class, 'index'])
         ->name('gudang.penerimaan');
 
     Route::get('/gudang/penerimaan/{purchaseOrder}', [PenerimaanBarangController::class, 'show'])
         ->name('gudang.penerimaan.show');
+    Route::get('/gudang/penerimaan/{penerimaanBarang}/foto', [PenerimaanBarangController::class, 'foto'])
+        ->name('gudang.penerimaan.foto');
 
     Route::post('/gudang/penerimaan/{purchaseOrder}/verifikasi', [PenerimaanBarangController::class, 'verifikasi'])
         ->name('gudang.penerimaan.verifikasi');
+    Route::post('/gudang/penerimaan/{penerimaanBarang}/tindak-lanjut', [PenerimaanBarangController::class, 'tindakLanjut'])
+        ->name('gudang.penerimaan.follow-up');
 });
 
 // ===============================

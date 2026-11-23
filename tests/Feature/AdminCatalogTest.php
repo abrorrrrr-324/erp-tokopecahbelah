@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
+use App\Models\ProductCategory;
+use App\Models\Supplier;
+use App\Models\SupplierProduct;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -75,13 +78,22 @@ class AdminCatalogTest extends TestCase
 
     public function test_gudang_and_customer_can_view_catalog_pages(): void
     {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $supplier = Supplier::factory()->create();
+
         Product::create([
             'name' => 'Lemari Minimalis',
             'category' => 'Furniture',
             'stock' => 12,
             'price' => 2450000,
             'status' => 'Aktif',
-            'created_by' => User::factory()->create(['role' => 'admin'])->id,
+            'created_by' => $admin->id,
+        ]);
+        SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'nama' => 'Lemari Minimalis Gudang',
+            'stok' => 12,
+            'harga_jual' => 2450000,
         ]);
 
         $gudang = User::factory()->create([
@@ -99,14 +111,89 @@ class AdminCatalogTest extends TestCase
         $this->actingAs($gudang)
             ->get(route('gudang.katalog'))
             ->assertOk()
-            ->assertSee('Lemari Minimalis')
-            ->assertSee('Katalog Barang');
+            ->assertSee('Lemari Minimalis Gudang')
+            ->assertSee('Katalog Barang')
+            ->assertSee('Aksi')
+            ->assertSee('Stok');
 
         $this->actingAs($customer)
             ->get(route('customer.katalog'))
             ->assertOk()
             ->assertSee('Lemari Minimalis')
             ->assertSee('Katalog Barang');
+    }
+
+    public function test_warehouse_catalog_and_stock_pages_filter_products_by_stock_status(): void
+    {
+        $warehouseManager = User::factory()->create(['role' => 'kepala_gudang']);
+        $supplier = Supplier::factory()->create();
+        $foodCategory = ProductCategory::query()->create([
+            'nama' => 'Peralatan Makan',
+            'status' => 'aktif',
+        ]);
+        $drinkCategory = ProductCategory::query()->create([
+            'nama' => 'Peralatan Minum',
+            'status' => 'aktif',
+        ]);
+
+        SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'category_id' => $foodCategory->id,
+            'nama' => 'Mangkuk Stok Habis',
+            'stok' => 0,
+            'stok_minimum' => 5,
+        ]);
+        SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'category_id' => $foodCategory->id,
+            'nama' => 'Piring Stok Menipis',
+            'stok' => 3,
+            'stok_minimum' => 5,
+        ]);
+        SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'category_id' => $drinkCategory->id,
+            'nama' => 'Gelas Stok Aman',
+            'stok' => 20,
+            'stok_minimum' => 5,
+        ]);
+
+        $this->actingAs($warehouseManager)
+            ->get(route('gudang.cek-stok'))
+            ->assertOk()
+            ->assertSee('Daftar Stok Barang')
+            ->assertSee('Stok Tersedia')
+            ->assertSee('Batas Minimum')
+            ->assertSee('Mangkuk Stok Habis')
+            ->assertSee('Piring Stok Menipis')
+            ->assertSee('Gelas Stok Aman')
+            ->assertSee('Habis')
+            ->assertSee('Menipis')
+            ->assertSee('Aman');
+
+        $this->actingAs($warehouseManager)
+            ->get(route('gudang.katalog', [
+                'search' => 'Peralatan Makan',
+                'status_stok' => 'menipis',
+            ]))
+            ->assertOk()
+            ->assertSee('Piring Stok Menipis')
+            ->assertDontSee('Mangkuk Stok Habis')
+            ->assertDontSee('Gelas Stok Aman');
+
+        $this->actingAs($warehouseManager)
+            ->get(route('gudang.cek-stok', ['status_stok' => 'habis']))
+            ->assertOk()
+            ->assertSee('Mangkuk Stok Habis')
+            ->assertDontSee('Piring Stok Menipis')
+            ->assertDontSee('Gelas Stok Aman');
+
+        $this->actingAs($warehouseManager)
+            ->get(route('gudang.cek-stok', ['status_stok' => 'aman']))
+            ->assertOk()
+            ->assertSee('Gelas Stok Aman')
+            ->assertDontSee('Mangkuk Stok Habis')
+            ->assertDontSee('Piring Stok Menipis');
     }
 
     public function test_admin_catalog_confirmation_messages_use_logout_style_copy(): void

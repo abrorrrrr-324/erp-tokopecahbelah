@@ -62,13 +62,9 @@
                                             class="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Tersedia</span>
                                     @else
                                         <span
-                                            class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">Tidak
-                                            tersedia</span>
+                                            class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">Tidak tersedia</span>
                                     @endif
-                                    <p class="mt-1 text-xs text-stone-500">
-                                        {{ number_format((int) ($item->product?->stok ?? 0), 0, ',', '.') }}
-                                        {{ $item->product?->satuan }}
-                                    </p>
+                                    <p class="mt-1 text-xs text-stone-500">{{ number_format((int) ($item->product?->stok ?? 0), 0, ',', '.') }} {{ $item->product?->satuan }}</p>
                                 </td>
                                 <td class="py-3 pr-4">Rp {{ number_format((float) $item->harga, 0, ',', '.') }}</td>
                                 <td class="py-3 text-right font-semibold text-stone-900">Rp

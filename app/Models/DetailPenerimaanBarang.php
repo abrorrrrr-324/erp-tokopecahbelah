@@ -15,6 +15,9 @@ class DetailPenerimaanBarang extends Model
         'goods_receipt_id',
         'produk_id',
         'jumlah',
+        'jumlah_diterima',
+        'jumlah_rusak',
+        'jumlah_hilang',
         'catatan',
     ];
 
@@ -22,6 +25,9 @@ class DetailPenerimaanBarang extends Model
     {
         return [
             'jumlah' => 'integer',
+            'jumlah_diterima' => 'integer',
+            'jumlah_rusak' => 'integer',
+            'jumlah_hilang' => 'integer',
         ];
     }
 

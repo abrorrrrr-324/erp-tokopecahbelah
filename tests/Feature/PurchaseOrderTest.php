@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\PenerimaanBarang;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Models\SupplierProduct;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PurchaseOrderTest extends TestCase
@@ -304,6 +307,37 @@ class PurchaseOrderTest extends TestCase
             ->assertSee('PO-'.str_pad((string) $order->id, 5, '0', STR_PAD_LEFT));
     }
 
+    public function test_supplier_order_table_shows_actions_for_each_order_status(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $waitingOrder = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'status' => 'menunggu',
+        ]);
+        $confirmedOrder = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'status' => 'dikonfirmasi',
+        ]);
+        $shippedOrder = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'status' => 'dikirim',
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->get(route('supplier.pesanan'))
+            ->assertSee('Aksi')
+            ->assertSee('Detail')
+            ->assertSee('Konfirmasi')
+            ->assertSee('Kirim')
+            ->assertSee(route('supplier.pesanan.show', $waitingOrder), false)
+            ->assertSee(route('supplier.pesanan.confirm', $waitingOrder), false)
+            ->assertDontSee(route('supplier.pesanan.confirm', $confirmedOrder), false)
+            ->assertDontSee(route('supplier.pesanan.confirm', $shippedOrder), false)
+            ->assertSee(route('supplier.pesanan.ship', $confirmedOrder), false)
+            ->assertDontSee(route('supplier.pesanan.ship', $waitingOrder), false)
+            ->assertDontSee(route('supplier.pesanan.ship', $shippedOrder), false);
+    }
+
     public function test_supplier_can_view_the_details_of_its_purchase_order(): void
     {
         $supplier = Supplier::factory()->create();
@@ -480,6 +514,306 @@ class PurchaseOrderTest extends TestCase
             ->post(route('supplier.pesanan.confirm', $order))
             ->assertRedirect(route('supplier.pesanan.show', $order))
             ->assertSessionHas('success', 'Pesanan pembelian berhasil dikonfirmasi.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'dikonfirmasi',
+        ]);
+    }
+
+    public function test_supplier_can_ship_a_confirmed_order_and_warehouse_can_receive_it(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $product = SupplierProduct::factory()->create([
+            'supplier_id' => $supplier->id,
+            'nama' => 'Piring Keramik Kiriman',
+            'stok' => 8,
+        ]);
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'status' => 'dikonfirmasi',
+        ]);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 4,
+            'harga' => 15000,
+            'sub_total' => 60000,
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->get(route('supplier.pesanan.show', $order))
+            ->assertSee('Kirim Barang');
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.ship', $order))
+            ->assertRedirect(route('supplier.pesanan.show', $order))
+            ->assertSessionHas('success', 'Pesanan berhasil ditandai sebagai barang dikirim.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'dikirim',
+        ]);
+        $this->assertDatabaseHas('penerimaan_barang', [
+            'purchase_order_id' => $order->id,
+            'status' => 'menunggu',
+        ]);
+
+        $warehouseManager = User::factory()->create(['role' => 'kepala_gudang']);
+
+        $this->actingAs($warehouseManager)
+            ->get(route('gudang.penerimaan'))
+            ->assertSee('PO-'.str_pad((string) $order->id, 5, '0', STR_PAD_LEFT));
+
+        $this->actingAs($warehouseManager)
+            ->get(route('gudang.penerimaan.show', $order))
+            ->assertSee('Piring Keramik Kiriman')
+            ->assertSee('Jumlah Diterima');
+
+        $this->actingAs($warehouseManager)
+            ->post(route('gudang.penerimaan.verifikasi', $order), [
+                'keputusan' => 'disetujui',
+                'items' => [
+                    $product->id => [
+                        'jumlah_diterima' => 4,
+                        'jumlah_rusak' => 0,
+                        'catatan' => 'Diterima dalam kondisi baik.',
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('gudang.penerimaan'))
+            ->assertSessionHas('success', 'Penerimaan disetujui dan stok barang baik telah diperbarui.');
+
+        $this->assertDatabaseHas('penerimaan_barang', [
+            'purchase_order_id' => $order->id,
+            'status' => 'disetujui',
+        ]);
+        $this->assertDatabaseHas('detail_penerimaan_barang', [
+            'produk_id' => $product->id,
+            'jumlah' => 4,
+            'jumlah_diterima' => 4,
+            'jumlah_rusak' => 0,
+            'jumlah_hilang' => 0,
+            'catatan' => 'Diterima dalam kondisi baik.',
+        ]);
+        $this->assertDatabaseHas('produk', [
+            'id' => $product->id,
+            'stok' => 12,
+        ]);
+        $this->assertDatabaseHas('pergerakan_stok', [
+            'produk_id' => $product->id,
+            'jenis' => 'masuk',
+            'jumlah' => 4,
+            'referensi_tipe' => 'penerimaan_barang',
+        ]);
+
+        $this->actingAs($warehouseManager)
+            ->post(route('gudang.penerimaan.verifikasi', $order), [
+                'keputusan' => 'disetujui',
+                'items' => [
+                    $product->id => [
+                        'jumlah_diterima' => 4,
+                        'jumlah_rusak' => 0,
+                    ],
+                ],
+            ])
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('produk', [
+            'id' => $product->id,
+            'stok' => 12,
+        ]);
+        $this->assertDatabaseCount('pergerakan_stok', 1);
+    }
+
+    public function test_warehouse_can_review_discrepancies_and_approve_only_good_items_once(): void
+    {
+        $warehouseManager = User::factory()->create(['role' => 'kepala_gudang']);
+        $product = SupplierProduct::factory()->create(['stok' => 8]);
+        $order = PurchaseOrder::factory()->create(['status' => 'dikirim']);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 4,
+            'harga' => 10000,
+            'sub_total' => 40000,
+        ]);
+        PenerimaanBarang::query()->create([
+            'purchase_order_id' => $order->id,
+            'status' => 'menunggu',
+            'tanggal_penerimaan' => now(),
+        ]);
+        Storage::fake('local');
+
+        $this->actingAs($warehouseManager)
+            ->post(route('gudang.penerimaan.verifikasi', $order), [
+                'keputusan' => 'perlu_pemeriksaan',
+                'catatan' => 'Satu unit rusak dan satu unit kurang.',
+                'foto_bukti' => UploadedFile::fake()->image('bukti.png'),
+                'items' => [
+                    $product->id => [
+                        'jumlah_diterima' => 3,
+                        'jumlah_rusak' => 1,
+                        'catatan' => 'Kemasan satu unit pecah.',
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('gudang.penerimaan'))
+            ->assertSessionHas('success', 'Penerimaan perlu pemeriksaan lanjutan. Stok belum berubah.');
+
+        $receipt = PenerimaanBarang::query()->where('purchase_order_id', $order->id)->firstOrFail();
+        $this->assertSame('perlu_pemeriksaan', $receipt->status);
+        $this->assertNotNull($receipt->foto_bukti);
+        Storage::disk('local')->assertExists($receipt->foto_bukti);
+        $this->actingAs($warehouseManager)
+            ->get(route('gudang.penerimaan.foto', $receipt))
+            ->assertOk()
+            ->assertHeader('content-type', 'image/png');
+        $this->assertDatabaseHas('detail_penerimaan_barang', [
+            'goods_receipt_id' => $receipt->id,
+            'produk_id' => $product->id,
+            'jumlah' => 2,
+            'jumlah_diterima' => 3,
+            'jumlah_rusak' => 1,
+            'jumlah_hilang' => 1,
+        ]);
+        $this->assertDatabaseHas('produk', ['id' => $product->id, 'stok' => 8]);
+        $this->assertDatabaseCount('pergerakan_stok', 0);
+
+        $this->actingAs($warehouseManager)
+            ->post(route('gudang.penerimaan.follow-up', $receipt), [
+                'keputusan' => 'disetujui',
+                'catatan' => 'Dua unit baik disetujui.',
+                'items' => [$product->id => ['jumlah' => 2]],
+            ])
+            ->assertRedirect(route('gudang.penerimaan.show', $order))
+            ->assertSessionHas('success', 'Tindak lanjut disetujui dan stok barang baik telah diperbarui.');
+
+        $this->assertDatabaseHas('penerimaan_barang', [
+            'id' => $receipt->id,
+            'status' => 'disetujui',
+            'reviewed_by' => $warehouseManager->id,
+        ]);
+        $this->assertDatabaseHas('produk', ['id' => $product->id, 'stok' => 10]);
+        $this->assertDatabaseHas('pergerakan_stok', [
+            'produk_id' => $product->id,
+            'jumlah' => 2,
+            'referensi_id' => $receipt->id,
+        ]);
+
+        $this->actingAs($warehouseManager)
+            ->post(route('gudang.penerimaan.follow-up', $receipt), [
+                'keputusan' => 'disetujui',
+                'catatan' => 'Pemeriksaan ulang.',
+                'items' => [$product->id => ['jumlah' => 2]],
+            ])
+            ->assertStatus(409);
+        $this->assertDatabaseHas('produk', ['id' => $product->id, 'stok' => 10]);
+        $this->assertDatabaseCount('pergerakan_stok', 1);
+    }
+
+    public function test_warehouse_cannot_approve_a_receipt_with_quantity_or_damage_discrepancies_directly(): void
+    {
+        $warehouseManager = User::factory()->create(['role' => 'kepala_gudang']);
+        $product = SupplierProduct::factory()->create(['stok' => 3]);
+        $order = PurchaseOrder::factory()->create(['status' => 'dikirim']);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 4,
+            'harga' => 10000,
+            'sub_total' => 40000,
+        ]);
+
+        $this->actingAs($warehouseManager)
+            ->from(route('gudang.penerimaan.show', $order))
+            ->post(route('gudang.penerimaan.verifikasi', $order), [
+                'keputusan' => 'disetujui',
+                'items' => [
+                    $product->id => [
+                        'jumlah_diterima' => 3,
+                        'jumlah_rusak' => 1,
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('gudang.penerimaan.show', $order))
+            ->assertSessionHasErrors('keputusan');
+
+        $this->assertDatabaseHas('produk', ['id' => $product->id, 'stok' => 3]);
+        $this->assertDatabaseCount('pergerakan_stok', 0);
+    }
+
+    public function test_warehouse_can_reject_a_receipt_without_changing_stock(): void
+    {
+        $warehouseManager = User::factory()->create(['role' => 'kepala_gudang']);
+        $product = SupplierProduct::factory()->create(['stok' => 5]);
+        $order = PurchaseOrder::factory()->create(['status' => 'dikirim']);
+        PurchaseOrderItem::query()->create([
+            'purchase_order_id' => $order->id,
+            'produk_id' => $product->id,
+            'jumlah' => 2,
+            'harga' => 10000,
+            'sub_total' => 20000,
+        ]);
+        PenerimaanBarang::query()->create([
+            'purchase_order_id' => $order->id,
+            'status' => 'menunggu',
+            'tanggal_penerimaan' => now(),
+        ]);
+
+        $this->actingAs($warehouseManager)
+            ->post(route('gudang.penerimaan.verifikasi', $order), [
+                'keputusan' => 'ditolak',
+                'catatan' => 'Barang yang dikirim tidak sesuai spesifikasi.',
+                'items' => [
+                    $product->id => [
+                        'jumlah_diterima' => 2,
+                        'jumlah_rusak' => 0,
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('gudang.penerimaan'))
+            ->assertSessionHas('success', 'Penerimaan ditolak. Stok tidak mengalami perubahan.');
+
+        $this->assertDatabaseHas('penerimaan_barang', [
+            'purchase_order_id' => $order->id,
+            'status' => 'ditolak',
+        ]);
+        $this->assertDatabaseHas('produk', ['id' => $product->id, 'stok' => 5]);
+        $this->assertDatabaseCount('pergerakan_stok', 0);
+    }
+
+    public function test_supplier_cannot_ship_an_order_before_confirming_it(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $supplier->id,
+            'status' => 'menunggu',
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.ship', $order))
+            ->assertRedirect(route('supplier.pesanan.show', $order))
+            ->assertSessionHas('error', 'Pesanan hanya dapat dikirim setelah dikonfirmasi.');
+
+        $this->assertDatabaseHas('pesanan_pembelian', [
+            'id' => $order->id,
+            'status' => 'menunggu',
+        ]);
+    }
+
+    public function test_supplier_cannot_ship_another_suppliers_order(): void
+    {
+        $supplier = Supplier::factory()->create();
+        $otherSupplier = Supplier::factory()->create();
+        $order = PurchaseOrder::factory()->create([
+            'supplier_id' => $otherSupplier->id,
+            'status' => 'dikonfirmasi',
+        ]);
+
+        $this->actingAs($supplier->user)
+            ->post(route('supplier.pesanan.ship', $order))
+            ->assertNotFound();
 
         $this->assertDatabaseHas('pesanan_pembelian', [
             'id' => $order->id,

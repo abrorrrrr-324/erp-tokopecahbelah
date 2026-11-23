@@ -25,6 +25,7 @@ class PergerakanStok extends Model
     {
         return [
             'jumlah' => 'integer',
+            'created_at' => 'datetime',
         ];
     }
 

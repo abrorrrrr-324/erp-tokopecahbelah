@@ -15,13 +15,17 @@
                     Daftar Pesanan Masuk
                 </h2>
                 <p class="text-sm text-stone-500">
-                    Pesanan dari Supplier yang sudah dikirim dan menunggu pemeriksaan.
+                    Riwayat barang dari Supplier beserta status pemeriksaan dan penerimaannya.
                 </p>
+            </div>
+
+            <div class="mt-5">
+                {{ $pesanan->links() }}
             </div>
 
             <div class="inline-flex w-fit items-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-800">
                 <span class="h-2 w-2 rounded-full bg-amber-500"></span>
-                {{ $pesanan->count() }} Pesanan Menunggu
+                {{ $pendingCount }} Menunggu Pemeriksaan
             </div>
         </div>
 
@@ -50,6 +54,7 @@
                             <th class="px-4 py-4 font-semibold">Supplier</th>
                             <th class="px-4 py-4 font-semibold">Tanggal Pesanan</th>
                             <th class="px-4 py-4 font-semibold">Jumlah Produk</th>
+                            <th class="px-4 py-4 font-semibold">Status</th>
                             <th class="px-4 py-4 font-semibold">Total Pembelian</th>
                             <th class="px-4 py-4 text-center font-semibold">Aksi</th>
                         </tr>
@@ -82,6 +87,28 @@
                                     {{ $po->items->count() }} jenis produk
                                 </td>
 
+                                <td class="px-4 py-4">
+                                    @php
+                                        $status = $po->penerimaanBarang?->status ?? 'menunggu';
+                                        $statusLabel = [
+                                            'menunggu' => 'Menunggu',
+                                            'perlu_pemeriksaan' => 'Perlu Pemeriksaan',
+                                            'disetujui' => 'Disetujui',
+                                            'diterima' => 'Disetujui',
+                                            'ditolak' => 'Ditolak',
+                                        ][$status] ?? ucfirst(str_replace('_', ' ', $status));
+                                        $statusClass = match ($status) {
+                                            'disetujui', 'diterima' => 'bg-emerald-100 text-emerald-700',
+                                            'ditolak' => 'bg-red-100 text-red-700',
+                                            'perlu_pemeriksaan' => 'bg-orange-100 text-orange-800',
+                                            default => 'bg-amber-100 text-amber-800',
+                                        };
+                                    @endphp
+                                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}">
+                                        {{ $statusLabel }}
+                                    </span>
+                                </td>
+
                                 <td class="px-4 py-4 text-sm font-semibold text-stone-800">
                                     Rp {{ number_format($po->total, 0, ',', '.') }}
                                 </td>
@@ -90,7 +117,7 @@
                                     <a
                                         href="{{ route('gudang.penerimaan.show', $po) }}"
                                         class="inline-flex items-center justify-center rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-900 transition hover:bg-amber-400">
-                                        Periksa Barang
+                                        Detail / Periksa
                                     </a>
                                 </td>
 
