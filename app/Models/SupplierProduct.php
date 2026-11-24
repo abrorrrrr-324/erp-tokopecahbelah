@@ -22,7 +22,6 @@ class SupplierProduct extends Model
         'harga_jual',
         'satuan',
         'stok',
-        'stok_minimum',
         'status',
         'category_id',
     ];
@@ -33,7 +32,6 @@ class SupplierProduct extends Model
             'harga_beli' => 'decimal:2',
             'harga_jual' => 'decimal:2',
             'stok' => 'integer',
-            'stok_minimum' => 'integer',
         ];
     }
 
@@ -50,15 +48,5 @@ class SupplierProduct extends Model
     public function purchaseOrderItems(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class, 'produk_id');
-    }
-
-    public function stockMovements(): HasMany
-    {
-        return $this->hasMany(PergerakanStok::class, 'produk_id');
-    }
-
-    public function stockAudits(): HasMany
-    {
-        return $this->hasMany(StockAudit::class, 'produk_id');
     }
 }

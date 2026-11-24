@@ -24,10 +24,13 @@
             ['label' => 'Dashboard', 'icon' => '🏠', 'route' => 'gudang.dashboard'],
             ['label' => 'Katalog Barang', 'icon' => '📦', 'route' => 'gudang.katalog'],
             ['label' => 'Real Stok', 'icon' => '📊', 'route' => 'gudang.cek-stok'],
-            ['label' => 'Penerimaan Supplier', 'icon' => '✅', 'route' => 'gudang.penerimaan', 'active_route' => 'gudang.penerimaan*'],
-            ['label' => 'Mutasi Stok', 'icon' => '🔄', 'route' => 'gudang.stok.mutasi', 'active_route' => 'gudang.stok.mutasi*'],
-            ['label' => 'Audit Rusak / Hilang', 'icon' => '📝', 'route' => 'gudang.audit', 'active_route' => 'gudang.audit*'],
-            ['label' => 'Laporan', 'icon' => '📈', 'route' => 'gudang.laporan', 'active_route' => 'gudang.laporan*'],
+            ['label' => 'Kelola Stok', 'icon' => '🧮', 'route' => null],
+            ['label' => 'Pengecekan', 'icon' => '🔍', 'route' => null],
+            ['label' => 'Update Qty', 'icon' => '✏️', 'route' => null],
+            ['label' => 'Audit Log', 'icon' => '📝', 'route' => null],
+            ['label' => 'Mutasi Keluar', 'icon' => '🚚', 'route' => null],
+            ['label' => 'Verifikasi Supplier', 'icon' => '✅', 'route' => null],
+            ['label' => 'Laporan', 'icon' => '📈', 'route' => null],
         ],
         'supplier' => [
             ['label' => 'Dashboard', 'icon' => '🏠', 'route' => 'supplier.dashboard'],
@@ -95,8 +98,7 @@
     $config = $roleConfig[$roleKey] ?? $roleConfig['customer'];
 
     $menu = array_map(function ($item) {
-        $activeRoute = $item['active_route'] ?? $item['route'];
-        $item['active'] = ! empty($activeRoute) && request()->routeIs($activeRoute);
+        $item['active'] = ! empty($item['route']) && request()->routeIs($item['route']);
 
         return $item;
     }, $menu);

@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\SupplierProduct;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -25,8 +23,8 @@ class AdminCatalogController extends Controller
             $keyword = strtolower(trim((string) $search));
 
             $query->where(function ($query) use ($keyword) {
-                $query->whereRaw('LOWER(name) LIKE ?', ['%'.$keyword.'%'])
-                    ->orWhereRaw('LOWER(category) LIKE ?', ['%'.$keyword.'%']);
+                $query->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
+                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%']);
             });
         }
 
@@ -68,86 +66,44 @@ class AdminCatalogController extends Controller
     // ==================== KATALOG GUDANG ====================
 
     // Daftar produk untuk kepala gudang
-    public function gudangIndex(Request $request): View
+    public function gudangIndex(): View
     {
-        $validated = $request->validate([
-            'status_stok' => ['nullable', 'string', 'in:habis,menipis,aman'],
-        ]);
-
-        $search = $request->query('search');
-        $query = SupplierProduct::query()->with(['category', 'supplier']);
-
-        if ($search !== null && $search !== '') {
-            $keyword = strtolower(trim((string) $search));
-
-            $query->where(function ($query) use ($keyword) {
-                $query->whereRaw('LOWER(nama) LIKE ?', ['%'.$keyword.'%'])
-                    ->orWhereHas('category', function ($categoryQuery) use ($keyword) {
-                        $categoryQuery->whereRaw('LOWER(nama) LIKE ?', ['%'.$keyword.'%']);
-                    });
-            });
-        }
-
-        $this->applyStockStatusFilter(
-            $query,
-            $validated['status_stok'] ?? null,
-            'stok',
-            'stok_minimum',
-        );
-
-        return view('catalog.index', [
-            'products' => $query->latest('updated_at')->latest('id')->get(),
-            'role' => 'kepala_gudang',
-        ]);
+        return $this->catalogIndexView('kepala_gudang');
     }
 
     // Detail produk untuk kepala gudang
-    public function gudangShow(SupplierProduct $product): View
+    public function gudangShow(Product $product): View
     {
-        $product->load(['category', 'supplier']);
-
-        return view('kepalagudang.katalog-detail', compact('product'));
+        return $this->catalogDetailView($product, 'kepala_gudang');
     }
 
     // ==================== CEK STOK KEPALA GUDANG ====================
 
     // Menampilkan halaman cek stok barang
-    public function cekStok(Request $request): View
+    public function cekStok(): View
     {
         $search = request()->query('search');
-        $validated = $request->validate([
-            'status_stok' => ['nullable', 'string', 'in:habis,menipis,aman'],
-        ]);
 
-        $query = SupplierProduct::query()->with('category');
+        $query = Product::query();
 
         // Pencarian nama dan kategori produk
         if ($search !== null && $search !== '') {
             $keyword = strtolower(trim((string) $search));
 
             $query->where(function ($query) use ($keyword) {
-                $query->whereRaw('LOWER(nama) LIKE ?', ['%'.$keyword.'%'])
-                    ->orWhereHas('category', function ($categoryQuery) use ($keyword) {
-                        $categoryQuery->whereRaw('LOWER(nama) LIKE ?', ['%'.$keyword.'%']);
-                    });
+                $query->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
+                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%']);
             });
         }
 
-        $this->applyStockStatusFilter(
-            $query,
-            $validated['status_stok'] ?? null,
-            'stok',
-            'stok_minimum',
-        );
-
         // Statistik seluruh produk
-        $totalProduk = SupplierProduct::count();
-        $totalStok = SupplierProduct::sum('stok');
+        $totalProduk = Product::count();
+        $totalStok = Product::sum('stock');
 
-        $stokHabis = SupplierProduct::where('stok', '<=', 0)->count();
+        $stokHabis = Product::where('stock', '<=', 0)->count();
 
-        $stokMenipis = SupplierProduct::where('stok', '>', 0)
-            ->whereRaw('stok <= COALESCE(stok_minimum, 10)')
+        $stokMenipis = Product::where('stock', '>', 0)
+            ->whereRaw('stock <= COALESCE(minimum_stock, 10)')
             ->count();
 
         // Mengambil data produk
@@ -164,6 +120,7 @@ class AdminCatalogController extends Controller
             'stokMenipis'
         ));
     }
+
 
     // ==================== KATALOG CUSTOMER ====================
 
@@ -204,7 +161,7 @@ class AdminCatalogController extends Controller
         ]);
 
         // Membuat SKU otomatis jika tidak diisi
-        $validated['sku'] = $validated['sku'] ?? 'PRD-'.strtoupper(substr(sha1((string) now()->timestamp.random_int(1000, 9999)), 0, 8));
+        $validated['sku'] = $validated['sku'] ?? 'PRD-' . strtoupper(substr(sha1((string) now()->timestamp . random_int(1000, 9999)), 0, 8));
         $validated['created_by'] = auth()->user()?->id;
 
         // Upload foto ke storage public
@@ -240,7 +197,7 @@ class AdminCatalogController extends Controller
         }
 
         // Pertahankan SKU lama jika input SKU kosong
-        $validated['sku'] = $validated['sku'] ?? ($product->sku ?? 'PRD-'.strtoupper(substr(sha1((string) now()->timestamp.random_int(1000, 9999)), 0, 8)));
+        $validated['sku'] = $validated['sku'] ?? ($product->sku ?? 'PRD-' . strtoupper(substr(sha1((string) now()->timestamp . random_int(1000, 9999)), 0, 8)));
 
         $product->update($validated);
 
@@ -267,7 +224,7 @@ class AdminCatalogController extends Controller
     }
 
     // Menampilkan daftar produk berdasarkan role
-    protected function catalogIndexView(string $role, ?string $stockStatus = null): View
+    protected function catalogIndexView(string $role): View
     {
         $search = request()->query('search');
         $query = Product::query();
@@ -276,12 +233,10 @@ class AdminCatalogController extends Controller
             $keyword = strtolower(trim((string) $search));
 
             $query->where(function ($query) use ($keyword) {
-                $query->whereRaw('LOWER(name) LIKE ?', ['%'.$keyword.'%'])
-                    ->orWhereRaw('LOWER(category) LIKE ?', ['%'.$keyword.'%']);
+                $query->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
+                    ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%']);
             });
         }
-
-        $this->applyStockStatusFilter($query, $stockStatus);
 
         $products = $query
             ->latest('updated_at')
@@ -292,22 +247,6 @@ class AdminCatalogController extends Controller
             'products' => $products,
             'role' => $role,
         ]);
-    }
-
-    private function applyStockStatusFilter(
-        Builder $query,
-        ?string $stockStatus,
-        string $stockColumn = 'stock',
-        string $minimumStockColumn = 'minimum_stock',
-    ): void {
-        if ($stockStatus === 'habis') {
-            $query->where($stockColumn, '<=', 0);
-        } elseif ($stockStatus === 'menipis') {
-            $query->where($stockColumn, '>', 0)
-                ->whereRaw("{$stockColumn} <= COALESCE({$minimumStockColumn}, 10)");
-        } elseif ($stockStatus === 'aman') {
-            $query->whereRaw("{$stockColumn} > COALESCE({$minimumStockColumn}, 10)");
-        }
     }
 
     // Menampilkan detail produk dan menentukan route kembali

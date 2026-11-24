@@ -46,15 +46,13 @@
     {{-- Daftar Produk --}}
     <section class="mt-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
 
-        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="text-xl font-bold text-stone-900">Daftar Stok Barang</h2>
-                <p class="text-sm text-stone-500">Pantau ketersediaan stok seluruh produk di gudang</p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('gudang.stok.mutasi') }}" class="rounded-xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-50">Riwayat Mutasi</a>
-                <a href="{{ route('gudang.stok.mutasi.create') }}" class="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-stone-900 hover:bg-amber-400">Catat Barang Masuk / Keluar</a>
-            </div>
+        <div class="mb-5">
+            <h2 class="text-xl font-bold text-stone-900">
+                Daftar Stok Barang
+            </h2>
+            <p class="text-sm text-stone-500">
+                Pantau ketersediaan stok seluruh produk di gudang
+            </p>
         </div>
 
         {{-- Pencarian --}}
@@ -72,26 +70,12 @@
                     class="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100">
             </div>
 
-            <div>
-                <label for="status_stok" class="sr-only">Filter status stok</label>
-                <select
-                    id="status_stok"
-                    name="status_stok"
-                    class="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100 sm:min-w-48"
-                >
-                    <option value="">Semua status stok</option>
-                    <option value="habis" {{ request('status_stok') === 'habis' ? 'selected' : '' }}>Habis</option>
-                    <option value="menipis" {{ request('status_stok') === 'menipis' ? 'selected' : '' }}>Menipis</option>
-                    <option value="aman" {{ request('status_stok') === 'aman' ? 'selected' : '' }}>Aman</option>
-                </select>
-            </div>
-
             <button type="submit"
                 class="rounded-xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-700">
                 Cari
             </button>
 
-            @if (request('search') || request('status_stok'))
+            @if (request('search'))
                 <a href="{{ route('gudang.cek-stok') }}"
                     class="inline-flex items-center justify-center rounded-xl border border-stone-200 px-5 py-3 text-sm font-semibold text-stone-600 hover:bg-stone-100">
                     Reset
@@ -100,74 +84,87 @@
 
         </form>
 
-        {{-- Tabel Stok Produk --}}
+        {{-- Kartu Produk --}}
         @if ($products->isEmpty())
+
             <div
                 class="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-stone-500">
                 Produk tidak ditemukan.
             </div>
         @else
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[800px] text-left text-sm">
-                    <thead>
-                        <tr class="border-b border-stone-200 bg-stone-50 text-xs uppercase tracking-wide text-stone-500">
-                            <th class="px-4 py-3 font-semibold">Produk</th>
-                            <th class="px-4 py-3 font-semibold">Kategori</th>
-                            <th class="px-4 py-3 font-semibold">Stok Tersedia</th>
-                            <th class="px-4 py-3 font-semibold">Batas Minimum</th>
-                            <th class="px-4 py-3 font-semibold">Status</th>
-                            <th class="px-4 py-3 text-right font-semibold">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-stone-100">
-                        @foreach ($products as $product)
-                            @php
-                                $minimumStock = $product->stok_minimum ?? 10;
+            <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-                                if ($product->stok <= 0) {
-                                    $stockStatus = 'Habis';
-                                    $statusClass = 'bg-red-100 text-red-700';
-                                } elseif ($product->stok <= $minimumStock) {
-                                    $stockStatus = 'Menipis';
-                                    $statusClass = 'bg-amber-100 text-amber-700';
-                                } else {
-                                    $stockStatus = 'Aman';
-                                    $statusClass = 'bg-emerald-100 text-emerald-700';
-                                }
-                            @endphp
-                            <tr class="transition hover:bg-stone-50">
-                                <td class="px-4 py-4 font-semibold text-stone-900">{{ $product->nama }}</td>
-                                <td class="px-4 py-4 text-stone-600">{{ $product->category?->nama ?? '-' }}</td>
-                                <td class="whitespace-nowrap px-4 py-4 font-semibold text-stone-900">
-                                    {{ number_format($product->stok, 0, ',', '.') }} {{ $product->satuan ?: 'unit' }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-4 text-stone-600">
-                                    {{ number_format($minimumStock, 0, ',', '.') }} {{ $product->satuan ?: 'unit' }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-4">
-                                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}">
-                                        {{ $stockStatus }}
-                                    </span>
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-4 text-right">
-                                    <a
-                                        href="{{ route('gudang.katalog.show', $product) }}"
-                                        class="inline-flex items-center justify-center rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-stone-900 transition hover:bg-amber-400"
-                                    >
-                                        Lihat detail
-                                    </a>
-                                    <a
-                                        href="{{ route('gudang.stok.mutasi', ['produk_id' => $product->id]) }}"
-                                        class="ml-1 inline-flex items-center justify-center rounded-lg border border-stone-200 px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-100"
-                                    >
-                                        Riwayat
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                @foreach ($products as $product)
+                    @php
+                        $minimumStock = $product->minimum_stock ?? 10;
+
+                        if ($product->stock <= 0) {
+                            $status = 'Habis';
+                            $statusClass = 'bg-red-100 text-red-700';
+                        } elseif ($product->stock <= $minimumStock) {
+                            $status = 'Menipis';
+                            $statusClass = 'bg-amber-100 text-amber-700';
+                        } else {
+                            $status = 'Aman';
+                            $statusClass = 'bg-green-100 text-green-700';
+                        }
+                    @endphp
+
+                    <article
+                        class="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm transition hover:shadow-md">
+
+                        {{-- Foto Produk --}}
+                        <img src="{{ $product->photo ? Storage::url($product->photo) : 'https://placehold.co/800x800/f5f5f4/1c1917?text=Produk' }}"
+                            alt="{{ $product->name }}" class="h-48 w-full object-cover"
+                            onerror="this.onerror=null;this.src='https://placehold.co/800x800/f5f5f4/1c1917?text=Produk';">
+
+                        <div class="space-y-4 p-5">
+
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">
+                                    {{ $product->category }}
+                                </p>
+
+                                <h3 class="mt-2 text-lg font-bold text-stone-900">
+                                    {{ $product->name }}
+                                </h3>
+                            </div>
+
+                            <div class="flex items-center justify-between text-sm text-stone-600">
+                                <span>Stok Tersedia</span>
+                                <strong class="font-bold text-stone-900">
+                                    {{ number_format($product->stock, 0, ',', '.') }}
+                                    {{ $product->unit ?: 'unit' }}
+                                </strong>
+                            </div>
+
+                            <div class="flex items-center justify-between text-sm text-stone-600">
+                                <span>Batas Minimum</span>
+                                <strong class="font-bold text-stone-900">
+                                    {{ number_format($minimumStock, 0, ',', '.') }}
+                                    {{ $product->unit ?: 'unit' }}
+                                </strong>
+                            </div>
+
+                            <div class="flex items-center justify-between border-t border-stone-200 pt-3">
+                                <span class="text-sm text-stone-600">Status Stok</span>
+
+                                <span class="rounded-full px-3 py-1 text-xs font-bold {{ $statusClass }}">
+                                    {{ $status }}
+                                </span>
+                            </div>
+
+                            <a href="{{ route('gudang.katalog.show', $product) }}"
+                                class="inline-flex w-full items-center justify-center rounded-xl bg-amber-500 px-3 py-2.5 text-sm font-semibold text-stone-900 transition hover:bg-amber-400">
+                                Lihat Detail
+                            </a>
+
+                        </div>
+                    </article>
+                @endforeach
+
             </div>
+
         @endif
 
     </section>
