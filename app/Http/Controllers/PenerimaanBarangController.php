@@ -63,7 +63,7 @@ class PenerimaanBarangController extends Controller
     ) {
         $validated = $request->validate([
             'keputusan' => 'required|in:diterima,ditolak',
-            'catatan' => 'nullable|string|max:2000',
+            'catatan' => 'required_if:keputusan,ditolak|nullable|string|max:2000',
 
             'items' => 'required|array',
             'items.*.jumlah' => 'required|integer|min:0',
