@@ -27,10 +27,10 @@
             ['label' => 'Kelola Stok', 'icon' => '🧮', 'route' => null],
             ['label' => 'Pengecekan', 'icon' => '🔍', 'route' => null],
             ['label' => 'Update Qty', 'icon' => '✏️', 'route' => null],
-            ['label' => 'Audit Log', 'icon' => '📝', 'route' => null],
+            ['label' => 'Audit Log', 'icon' => '📝', 'route' => 'gudang.log-audit.index'],
             ['label' => 'Mutasi Keluar', 'icon' => '🚚', 'route' => null],
-            ['label' => 'Verifikasi Supplier', 'icon' => '✅', 'route' => null],
-            ['label' => 'Laporan', 'icon' => '📈', 'route' => null],
+            ['label' => 'Penerimaan Barang', 'icon' => '📥', 'route' => 'gudang.penerimaan'],
+            ['label' => 'Laporan Stok', 'icon' => '📈', 'route' => 'gudang.laporan-stok'],
         ],
         'supplier' => [
             ['label' => 'Dashboard', 'icon' => '🏠', 'route' => 'supplier.dashboard'],
@@ -98,7 +98,7 @@
     $config = $roleConfig[$roleKey] ?? $roleConfig['customer'];
 
     $menu = array_map(function ($item) {
-        $item['active'] = ! empty($item['route']) && request()->routeIs($item['route']);
+        $item['active'] = !empty($item['route']) && request()->routeIs($item['route']);
 
         return $item;
     }, $menu);
@@ -106,73 +106,71 @@
 
 <!DOCTYPE html>
 <html lang="id">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>@yield('title', 'Dashboard')</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-            body {
-                font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-            }
-        </style>
-    </head>
-    <body class="bg-stone-100 text-stone-800 antialiased">
-        <div class="flex min-h-screen">
-            @include('layouts.partials.sidebar', ['config' => $config, 'menu' => $menu])
 
-            <div class="flex min-h-screen flex-1 flex-col">
-                @include('layouts.partials.topbar', ['config' => $config, 'user' => $user])
-
-
-@if (session('success'))
-    <div
-        id="success-notification"
-        class="mx-6 mt-6 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm transition-opacity duration-500 lg:mx-8"
-        role="status"
-    >
-        <span>✓ {{ session('success') }}</span>
-
-        <button
-            type="button"
-            onclick="hideSuccessNotification()"
-            class="text-xl font-bold hover:text-emerald-900"
-            aria-label="Tutup notifikasi"
-        >
-            &times;
-        </button>
-    </div>
-
-    <script>
-        function hideSuccessNotification() {
-            const notification = document.getElementById('success-notification');
-
-            if (!notification) return;
-
-            notification.style.opacity = '0';
-
-            setTimeout(() => {
-                notification.remove();
-            }, 500);
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Dashboard')</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
         }
+    </style>
+</head>
 
-        setTimeout(hideSuccessNotification, 3000);
-    </script>
-@endif
+<body class="bg-stone-100 text-stone-800 antialiased">
+    <div class="flex min-h-screen">
+        @include('layouts.partials.sidebar', ['config' => $config, 'menu' => $menu])
 
-@if (session('error'))
-    <div class="mx-6 mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 lg:mx-8" role="alert">
-        {{ session('error') }}
-    </div>
-@endif
+        <div class="flex min-h-screen flex-1 flex-col">
+            @include('layouts.partials.topbar', ['config' => $config, 'user' => $user])
 
 
-                <main class="flex-1 p-6 lg:p-8">
-                    @yield('content')
-                </main>
+            @if (session('success'))
+                <div id="success-notification"
+                    class="mx-6 mt-6 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm transition-opacity duration-500 lg:mx-8"
+                    role="status">
+                    <span>✓ {{ session('success') }}</span>
 
-                @include('layouts.partials.footer', ['config' => $config])
-            </div>
+                    <button type="button" onclick="hideSuccessNotification()"
+                        class="text-xl font-bold hover:text-emerald-900" aria-label="Tutup notifikasi">
+                        &times;
+                    </button>
+                </div>
+
+                <script>
+                    function hideSuccessNotification() {
+                        const notification = document.getElementById('success-notification');
+
+                        if (!notification) return;
+
+                        notification.style.opacity = '0';
+
+                        setTimeout(() => {
+                            notification.remove();
+                        }, 500);
+                    }
+
+                    setTimeout(hideSuccessNotification, 3000);
+                </script>
+            @endif
+
+            @if (session('error'))
+                <div class="mx-6 mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 lg:mx-8"
+                    role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+
+            <main class="flex-1 p-6 lg:p-8">
+                @yield('content')
+            </main>
+
+            @include('layouts.partials.footer', ['config' => $config])
         </div>
-    </body>
+    </div>
+</body>
+
 </html>
