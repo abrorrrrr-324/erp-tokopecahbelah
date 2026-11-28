@@ -11,6 +11,8 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Controllers\LogAuditKerusakanController;
+use App\Http\Controllers\LaporanStokController;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -129,6 +131,20 @@ Route::middleware(['auth', 'role:kepala_gudang'])->group(function () {
     Route::get('/gudang/cek-stok', [AdminCatalogController::class, 'cekStok'])
         ->name('gudang.cek-stok');
 
+    // LOG AUDIT KERUSAKAN
+    Route::get('/gudang/log-audit-kerusakan', [LogAuditKerusakanController::class, 'index'])
+        ->name('gudang.log-audit.index');
+
+    Route::get('/gudang/log-audit-kerusakan/create', [LogAuditKerusakanController::class, 'create'])
+        ->name('gudang.log-audit.create');
+
+    Route::post('/gudang/log-audit-kerusakan', [LogAuditKerusakanController::class, 'store'])
+        ->name('gudang.log-audit.store');
+
+    // LAPORAN STOK MASUK & KELUAR
+    Route::get('/gudang/laporan-stok', [LaporanStokController::class, 'index'])
+    ->name('gudang.laporan-stok');
+    
     // PENERIMAAN BARANG
     Route::get('/gudang/penerimaan', [PenerimaanBarangController::class, 'index'])
         ->name('gudang.penerimaan');

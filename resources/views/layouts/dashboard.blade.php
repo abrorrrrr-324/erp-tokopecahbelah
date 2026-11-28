@@ -27,10 +27,10 @@
             ['label' => 'Kelola Stok', 'icon' => '🧮', 'route' => null],
             ['label' => 'Pengecekan', 'icon' => '🔍', 'route' => null],
             ['label' => 'Update Qty', 'icon' => '✏️', 'route' => null],
-            ['label' => 'Audit Log', 'icon' => '📝', 'route' => null],
+            ['label' => 'Audit Log', 'icon' => '📝', 'route' => 'gudang.log-audit.index'],
             ['label' => 'Mutasi Keluar', 'icon' => '🚚', 'route' => null],
             ['label' => 'Penerimaan Barang', 'icon' => '📥', 'route' => 'gudang.penerimaan'],
-            ['label' => 'Laporan', 'icon' => '📈', 'route' => null],
+            ['label' => 'Laporan Stok', 'icon' => '📈', 'route' => 'gudang.laporan-stok'],
         ],
         'supplier' => [
             ['label' => 'Dashboard', 'icon' => '🏠', 'route' => 'supplier.dashboard'],

@@ -31,7 +31,7 @@ class PergerakanStok extends Model
     public function produk(): BelongsTo
     {
         return $this->belongsTo(
-            SupplierProduct::class,
+            Product::class,
             'produk_id'
         );
     }
